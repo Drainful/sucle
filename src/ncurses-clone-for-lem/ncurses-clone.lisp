@@ -84,16 +84,16 @@
 #+nil
 (defun ncurses-attron (n)
   (setf *current-attributes*
-	(logior *current-attributes* n)))
+        (logior *current-attributes* n)))
 #+nil
 (defun ncurses-attroff (n)
   (setf *current-attributes*
-	(logand *current-attributes* (lognot n))))
+        (logand *current-attributes* (lognot n))))
 ;;[FIXME]this is not how ncurses is implemented
 (defmacro with-attributes ((attributes &optional attribute-object save-attributes-object) &body body)
   `(let ((*current-attributes* ,attributes)
-	 (*current-attributes-object* ,attribute-object)
-	 (*force-extra-big-glyphs-for-attributes-object* ,save-attributes-object))
+         (*current-attributes-object* ,attribute-object)
+         (*force-extra-big-glyphs-for-attributes-object* ,save-attributes-object))
      ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -125,9 +125,9 @@
 (set-pprint-dispatch 'big-glyph 'print-big-glyph)
 (defun make-extra-big-glyph (&key attribute-data value attributes)
   (make-instance 'extra-big-glyph
-		 :attribute-data attribute-data
-		 :value value
-		 :attributes attributes))
+                 :attribute-data attribute-data
+                 :value value
+                 :attributes attributes))
 
 (utility:eval-always
   (defparameter *glyph-attribute-bit-size* (+ *color-bit-size* 3))
@@ -138,24 +138,24 @@
   (etypecase glyph
     (glyph
      (locally
-	 (declare (type glyph glyph)
-		  (optimize (speed 3)
-			    (safety 0)))
+         (declare (type glyph glyph)
+                  (optimize (speed 3)
+                            (safety 0)))
        (code-char (logand glyph (utility:etouq (1- (ash 1 *bits-per-char-in-glyph*)))))))
     (big-glyph (big-glyph-value glyph))))
 (defun glyph-attributes (glyph)
   (etypecase glyph
     (glyph
      (locally (declare (type glyph glyph)
-		       (optimize (speed 3)
-				 (safety 0)))
+                       (optimize (speed 3)
+                                 (safety 0)))
        (ash glyph -8)))
     (big-glyph (big-glyph-attributes glyph))))
 #+nil
 (defun prepare-attributes-for-glyph (attributes)
   (declare (type glyph-attributes attributes))
   (declare (optimize (speed 3)
-		     (safety 0)))
+                     (safety 0)))
   (ash attributes 8))
 
 (progn
@@ -166,14 +166,14 @@
 
 (defun gen-glyph (value attributes)
   (declare (optimize (speed 3)
-		     (safety 0)))
+                     (safety 0)))
   (declare (type glyph-attributes attributes))
   (let ((code (char-code value)))
     (if (n-char-fits-in-glyph code)
-	(logior (char-code value)
-		(ash attributes (utility:etouq *bits-per-char-in-glyph*)))
-	(make-big-glyph :value value
-			:attributes attributes))))
+        (logior (char-code value)
+                (ash attributes (utility:etouq *bits-per-char-in-glyph*)))
+        (make-big-glyph :value value
+                        :attributes attributes))))
 #+nil
 (progn
   (defun print-glyph (stream glyph)
@@ -201,32 +201,32 @@
     (setf *fg-default* *fg-default-really*)
     (setf *bg-default* *bg-default-really*)
     (setf *pairs*
-	  (let ((pairs (make-hash-table)))
-	    (setf (gethash 0 pairs)
-		  (cons *fg-default-really*
-			*bg-default-really*)
+          (let ((pairs (make-hash-table)))
+            (setf (gethash 0 pairs)
+                  (cons *fg-default-really*
+                        *bg-default-really*)
  ;;;;[FIXME] whats white and black for default? short?
-		  )
-	    pairs)))
+                  )
+            pairs)))
 
   (defun ncurses-init-pair (pair-counter fg bg)
     (setf (gethash pair-counter *pairs*)
-	  (cons fg bg)))
+          (cons fg bg)))
   (defun ncurses-color-pair (pair-counter)
     (gethash pair-counter *pairs*)) ;;fixme -> this is not how ncurses works.
 
   (defun ncurses-pair-content (pair-counter)
     (let ((pair (ncurses-color-pair pair-counter)))
       (values (car pair)
-	      (cdr pair))))
+              (cdr pair))))
   (defun ncurses-assume-default-color (fg bg)
   ;;;;how ncurses works. see https://users-cs.au.dk/sortie/sortix/release/nightly/man/man3/assume_default_colors.3.html
     (setf *fg-default* (if (= fg -1)
-			   *fg-default*
-			   fg)
-	  *bg-default* (if (= bg -1)
-			   *bg-default*
-			   bg))
+                           *fg-default*
+                           fg)
+          *bg-default* (if (= bg -1)
+                           *bg-default*
+                           bg))
     (ncurses-init-pair 0 *fg-default* *bg-default*)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -259,7 +259,7 @@
   (let ((rows-array (make-array rows)))
     (dotimes (i rows)
       (setf (aref rows-array i)
-	    (make-row columns)))
+            (make-row columns)))
     rows-array))
 
 (defun grid-rows (grid)
@@ -268,30 +268,30 @@
   (length (aref grid 0)))
 (utility:etouq
   (let ((place '(aref (aref grid y) x))
-	(args '(x y grid)))
+        (args '(x y grid)))
     `(progn
        (defun ref-grid (,@args)
-	 ,place)
+         ,place)
        (defun (setf ref-grid) (new ,@args)
-	 (setf ,place new)
-	 new))))
+         (setf ,place new)
+         new))))
 
 (defun print-grid (grid &optional (stream *standard-output*) (cursor-x 0) (cursor-y 0))
   (dotimes (grid-row (grid-rows grid))
     (terpri stream)
     (write-char #\| stream)
-    (let ((row-data (aref grid grid-row)))	
+    (let ((row-data (aref grid grid-row)))      
       (dotimes (grid-column (grid-columns grid)) ;;[FIXME] dereferencing redundancy
-	(let ((cursor-here-p (and (= grid-column cursor-x)
-				  (= grid-row cursor-y)))
-	      (x (aref row-data grid-column)))
-	  (when cursor-here-p (write-char #\[ stream))
-	  (write-char 
-	   (typecase x
-	     (glyph (glyph-value x))
-	     (t #\space))
-	   stream)
-	  (when cursor-here-p (write-char #\] stream)))))
+        (let ((cursor-here-p (and (= grid-column cursor-x)
+                                  (= grid-row cursor-y)))
+              (x (aref row-data grid-column)))
+          (when cursor-here-p (write-char #\[ stream))
+          (write-char 
+           (typecase x
+             (glyph (glyph-value x))
+             (t #\space))
+           stream)
+          (when cursor-here-p (write-char #\] stream)))))
     (write-char #\| stream))
   (terpri stream)
   grid)
@@ -299,44 +299,44 @@
 (defun move-row (old-n new-n grid)
   "move row old-n to new-n"
   (cond ((> (grid-rows grid) new-n -1)
-	 (setf (aref grid new-n)
-	       (aref grid old-n))
-	 (setf (aref grid old-n) nil))
-	(t (error "moving to a row that does not exist")))
+         (setf (aref grid new-n)
+               (aref grid old-n))
+         (setf (aref grid old-n) nil))
+        (t (error "moving to a row that does not exist")))
   grid)
 
 (defun transfer-data (grid-src grid-dest)
   (let ((shared-rows
-	 (min (grid-rows grid-src)
-	      (grid-rows grid-dest)))
-	(shared-columns
-	 (min (grid-columns grid-src)
-	      (grid-columns grid-dest))))
+         (min (grid-rows grid-src)
+              (grid-rows grid-dest)))
+        (shared-columns
+         (min (grid-columns grid-src)
+              (grid-columns grid-dest))))
     (dotimes (row-index shared-rows)
       ;;[FIXME] optimization? can cache the row. but its a fragile optimization
       (dotimes (column-index shared-columns)
-	(setf (ref-grid column-index row-index grid-dest)
-	      (ref-grid column-index row-index grid-src)))))
+        (setf (ref-grid column-index row-index grid-dest)
+              (ref-grid column-index row-index grid-src)))))
   grid-dest)
 
 (defun clear-win (win)
   (map nil
        (lambda (row)
-	 (fill row *clear-glyph*))
+         (fill row *clear-glyph*))
        (win-data win)))
 
 (defparameter *win* nil)
 
 (defun ncurses-newwin (nlines ncols begin-y begin-x)
   (let ((win (make-win :lines nlines
-		       :cols ncols
-		       :y begin-y
-		       :x begin-x
-		       :cursor-x 0
-		       :cursor-y 0
-		       :data (make-grid nlines ncols)
-		       ;;:attr-bits 0
-		       )))
+                       :cols ncols
+                       :y begin-y
+                       :x begin-x
+                       :cursor-x 0
+                       :cursor-y 0
+                       :data (make-grid nlines ncols)
+                       ;;:attr-bits 0
+                       )))
   ;;  (add-win win)
     (setf *win* win)
     win))
@@ -371,16 +371,16 @@
 ;;https://linux.die.net/man/3/scrollok
 (defun ncurses-wmove (win y x)
   (setf (win-cursor-x win) x
-	(win-cursor-y win) y))
+        (win-cursor-y win) y))
 (defun ncurses-move (y x)
   (ncurses-wmove *std-scr* y x))
 
 ;;https://www.mkssoftware.com/docs/man3/curs_border.3.asp
 (defun ncurses-wvline (win char n)
   (let ((y (win-cursor-y win))
-	(x (win-cursor-x win)))
+        (x (win-cursor-x win)))
     (loop :for i :from y :below (min (+ y n)
-				     (win-lines win))
+                                     (win-lines win))
        :do
        (add-char x i char win))))
 (defun ncurses-vline (char n)
@@ -396,7 +396,7 @@
 (defun ncurses-clearok (win value)
   "If clearok is called with TRUE as argument, the next call to wrefresh with this window will clear the screen completely and redraw the entire screen from scratch. This is useful when the contents of the screen are uncertain, or in some cases for a more pleasing visual effect. If the win argument to clearok is the global variable curscr, the next call to wrefresh with any window causes the screen to be cleared and repainted from scratch. "
   (setf (win-clearok win)
-	(c-true value)))
+        (c-true value)))
 
 ;;;[FIXME] add default window for ncurses like stdscr
 
@@ -404,20 +404,20 @@
   "Calling mvwin moves the window so that the upper left-hand corner is at position (x, y). If the move would cause the window to be off the screen, it is an error and the window is not moved. Moving subwindows is allowed, but should be avoided."
   ;;;[FIXME] detect off screen 
   (setf (win-x win) x
-	(win-y win) y))
+        (win-y win) y))
 
 (defun ncurses-wresize (win height width)
   (cond ((or (/= (win-lines win) height)
-	     (/= (win-cols win) width))
-	 (setf (win-lines win) height
-	       (win-cols win) width)
-	 (let ((old-data (win-data win))
-	       (new-grid (make-grid height width)))
-	   (transfer-data old-data new-grid)
-	   (setf (win-data win)
-		 new-grid))
-	 t)
-	(t nil)))
+             (/= (win-cols win) width))
+         (setf (win-lines win) height
+               (win-cols win) width)
+         (let ((old-data (win-data win))
+               (new-grid (make-grid height width)))
+           (transfer-data old-data new-grid)
+           (setf (win-data win)
+                 new-grid))
+         t)
+        (t nil)))
 
 #+nil
 (defparameter *mouse-enabled-p* nil)
@@ -425,33 +425,33 @@
 (defun ncurses-wattron (win attr)
   (let ((old (win-attr-bits win)))
     (setf (win-attr-bits win)
-	  (logior attr old))))
+          (logior attr old))))
 #+nil
 (defun ncurses-wattroff (win attr)
   (let ((old (win-attr-bits win)))
     (setf (win-attr-bits win)
-	  (logand (lognot attr) old))))
+          (logand (lognot attr) old))))
 
 (defun %ncurses-wscrl (grid n)
   (let ((width (grid-columns grid)))
     (cond ((plusp n)
-	   ;;scrolling up means lines get moved up,
-	   ;;which means start at top of screen to move, which is smallest.
-	   (loop :for i :from n :below (grid-rows grid)
-	      :do
-	      (move-row i
-			(- i n)
-			grid)))
-	  ((minusp n)
-	   ;;scrolling down means lines get moved down,
-	   ;;which means start at bottom of screen to move, which is largest.
-	   (let ((move-distance (- n)))
-	     (loop :for i :from (- (grid-rows grid) 1 move-distance) :downto 0
-		:do
-		(move-row i
-			  (+ i move-distance)
-			  grid))))
-	  ((zerop n) t))
+           ;;scrolling up means lines get moved up,
+           ;;which means start at top of screen to move, which is smallest.
+           (loop :for i :from n :below (grid-rows grid)
+              :do
+              (move-row i
+                        (- i n)
+                        grid)))
+          ((minusp n)
+           ;;scrolling down means lines get moved down,
+           ;;which means start at bottom of screen to move, which is largest.
+           (let ((move-distance (- n)))
+             (loop :for i :from (- (grid-rows grid) 1 move-distance) :downto 0
+                :do
+                (move-row i
+                          (+ i move-distance)
+                          grid))))
+          ((zerop n) t))
     ;;;;fill in those nil's. OR [FIXME]
     (map-into grid (lambda (x) (or x (make-row width))) grid))
   grid)
@@ -467,7 +467,7 @@
 (defun ncurses-wclrtoeol (&optional (win *win*))
   "The clrtoeol() and wclrtoeol() routines erase the current line to the right of the cursor, inclusive, to the end of the current line. https://www.mkssoftware.com/docs/man3/curs_clear.3.asp"
   (let ((x (win-cursor-x win))
-	(y (win-cursor-y win)))
+        (y (win-cursor-y win)))
     (loop :for i :from x :below (win-cols win)
        :do (add-char i y #\Space win)))
   win)
@@ -482,7 +482,7 @@
     (loop :for i :from (+ y 1) :below (win-lines win)
        :do
        (loop :for z :from 0 :below (win-cols win)
-	  :do (add-char z i #\Space win))))
+          :do (add-char z i #\Space win))))
   win)
 
 (defun max-cursor-y (&optional (win *win*))
@@ -501,97 +501,97 @@ The areas which would be covered by it are filled with this, *widechar-placehold
 
 If ch is a tab, newline, or backspace, the cursor is moved appropriately within the window. Backspace moves the cursor one character left; at the left edge of a window it does nothing. Newline does a clrtoeol(), then moves the cursor to the window left margin on the next line, scrolling the window if on the last line). Tabs are considered to be at every eighth column. https://www.mkssoftware.com/docs/man3/curs_addch.3.asp If ch is any control character other than tab, newline, or backspace, it is drawn in ^X notation. Calling winch() after adding a control character does not return the character itself, but instead returns the ^-representation of the control character. (To emit control characters literally, use echochar().) "
   (symbol-macrolet ((x (win-cursor-x win))
-		    (y (win-cursor-y win)))
+                    (y (win-cursor-y win)))
     (flet ((advance ()
-	     (if (= (max-cursor-x win) x)
-		 (cond ((= (max-cursor-y win) y)
-			#+nil
-			(cond ((win-scrollok win) ;;scroll the window and reset to x pos
-			       (ncurses-wscrl win 1)
-			       (setf (win-cursor-x win) 0))
-			      (t (progn ;;do nothing
-				   ))))
-		       (t
-			;;reset x and go to next line, theres space
-			(progn
-			  ;;(print (random 34))
-			  #+nil
-			  (setf (win-cursor-x win) 0
-				(win-cursor-y win) (+ 1 y)))))
-		 ;;its not at the end of line, no one cares
-		 (progn
-		   (setf (win-cursor-x win) (+ 1 x))))))
+             (if (= (max-cursor-x win) x)
+                 (cond ((= (max-cursor-y win) y)
+                        #+nil
+                        (cond ((win-scrollok win) ;;scroll the window and reset to x pos
+                               (ncurses-wscrl win 1)
+                               (setf (win-cursor-x win) 0))
+                              (t (progn ;;do nothing
+                                   ))))
+                       (t
+                        ;;reset x and go to next line, theres space
+                        (progn
+                          ;;(print (random 34))
+                          #+nil
+                          (setf (win-cursor-x win) 0
+                                (win-cursor-y win) (+ 1 y)))))
+                 ;;its not at the end of line, no one cares
+                 (progn
+                   (setf (win-cursor-x win) (+ 1 x))))))
       (cond 
-	((char= char #\tab)
-	 (setf (win-cursor-x win)
-	       (next-8 x)))
-	((char= char #\newline)
-	 (ncurses-clrtoeol)
-	 (let ((max-cursor-y (max-cursor-y win)))
-	   (if (= max-cursor-y y)
-	       (ncurses-wscrl win 1)
-	       (setf (win-cursor-y win)
-		     (min (+ 1 y)
-			  max-cursor-y))))
-	 (setf (win-cursor-x win) 0))
-	((char= char #\backspace)
-	 (setf (win-cursor-x win)
-	       (max 0 (- x 1))))
-	((char-control char)
-	 (add-char x y #\^ win)
-	 (advance)
-	 (ncurses-waddch win (char-control-printable char)))
-	((standard-char-p char)
-	 (add-char x y char win)
-	 (advance))
-	(t
-	 (let ((width (char-width-at char x)))
-	   (dotimes (i width)
-	     (case i
-	       (0 (add-char x y
-			    char
-			    win))
-	       (otherwise (add-thing x y *widechar-placeholder* win)))
-	     (advance))))))))
+        ((char= char #\tab)
+         (setf (win-cursor-x win)
+               (next-8 x)))
+        ((char= char #\newline)
+         (ncurses-clrtoeol)
+         (let ((max-cursor-y (max-cursor-y win)))
+           (if (= max-cursor-y y)
+               (ncurses-wscrl win 1)
+               (setf (win-cursor-y win)
+                     (min (+ 1 y)
+                          max-cursor-y))))
+         (setf (win-cursor-x win) 0))
+        ((char= char #\backspace)
+         (setf (win-cursor-x win)
+               (max 0 (- x 1))))
+        ((char-control char)
+         (add-char x y #\^ win)
+         (advance)
+         (ncurses-waddch win (char-control-printable char)))
+        ((standard-char-p char)
+         (add-char x y char win)
+         (advance))
+        (t
+         (let ((width (char-width-at char x)))
+           (dotimes (i width)
+             (case i
+               (0 (add-char x y
+                            char
+                            win))
+               (otherwise (add-thing x y *widechar-placeholder* win)))
+             (advance))))))))
 
 (defparameter *char-width-at-fun* nil)
 (defun char-width-at (char xpos)
   (let ((fun *char-width-at-fun*))
     (if fun
-	(- (funcall fun char xpos)
-	   xpos)
-	1)))
+        (- (funcall fun char xpos)
+           xpos)
+        1)))
 (defun next-8 (n)
   "this is for tabbing, see waddch. its every 8th column"
   (* 8 (+ 1 (floor n 8))))
 (defun add-char (x y value &optional (win *win*))
   (let ((glyph
-	 (if *force-extra-big-glyphs-for-attributes-object*
-	     (make-extra-big-glyph
-	      :attribute-data *current-attributes-object*
-	      :value value
-	      :attributes *current-attributes*)
-	     (gen-glyph value
-			;;(logior (win-attr-bits win))
-			*current-attributes*))))
+         (if *force-extra-big-glyphs-for-attributes-object*
+             (make-extra-big-glyph
+              :attribute-data *current-attributes-object*
+              :value value
+              :attributes *current-attributes*)
+             (gen-glyph value
+                        ;;(logior (win-attr-bits win))
+                        *current-attributes*))))
     (add-thing x y
-	       glyph
-	       win))
+               glyph
+               win))
   win)
 
 (defun add-thing (x y thing &optional (win *win*))
   (when (and (> (win-lines win) y -1)
-	     (> (win-cols win) x -1))
+             (> (win-cols win) x -1))
     (setf (ref-grid x y (win-data win))
-	  thing))
+          thing))
   win)
 
 (defun char-control (char)
   ;;[FIXME] not portable common lisp, requires ASCII
   (let ((value (char-code char)))
-	(if (> 32 value)
-	    t
-	    nil)))
+        (if (> 32 value)
+            t
+            nil)))
 
 (defun char-control-printable (char)
   ;;[FIXME] not portable common lisp, requires ASCII
@@ -600,13 +600,13 @@ If ch is a tab, newline, or backspace, the cursor is moved appropriately within 
 (defun fuzz (&optional (win *win*))
   (dotimes (x 100)
     (add-char (random (win-cols win))
-	      (random (win-lines win))
-	      #\a
-	      win))
+              (random (win-lines win))
+              #\a
+              win))
   win)
 
 (defun ncurses-wnoutrefresh (&optional (win *win*) ;;(cursor-mode *cursor-state*)
-			       )
+                               )
   ;;;[FIXME] follow https://linux.die.net/man/3/wnoutrefresh with "touching"
   ;;;different lines
   #+nil
@@ -616,44 +616,44 @@ If ch is a tab, newline, or backspace, the cursor is moved appropriately within 
     (setf (win-clearok win) nil))
   (with-virtual-window-lock
     (let ((grid (win-data win))
-	  (xwin (win-x win))
-	  (ywin (win-y win))
-	  ;;(cursor-x (win-cursor-x win))
-	  ;;(cursor-y (win-cursor-y win))
-	  (columns
-	   (win-cols *std-scr*)
-	   ;;(length (aref *virtual-window* 0))
-	   )
-	  (lines
-	   (win-lines *std-scr*)
-	   ;;(length *virtual-window*)
-	   ))
+          (xwin (win-x win))
+          (ywin (win-y win))
+          ;;(cursor-x (win-cursor-x win))
+          ;;(cursor-y (win-cursor-y win))
+          (columns
+           (win-cols *std-scr*)
+            ;;(length (aref *virtual-window* 0))
+            )
+          (lines
+           (win-lines *std-scr*)
+            ;;(length *virtual-window*)
+            ))
       (dotimes (y (win-lines win))
-	(dotimes (x (win-cols win))
-	  (let ((glyph (ref-grid x y grid)))
-	    (let ((xdest (+ xwin x))
-		  (ydest (+ ywin y)))
-	      (when (and (> columns xdest -1)
-			 (> lines ydest -1))
+        (dotimes (x (win-cols win))
+          (let ((glyph (ref-grid x y grid)))
+            (let ((xdest (+ xwin x))
+                  (ydest (+ ywin y)))
+              (when (and (> columns xdest -1)
+                         (> lines ydest -1))
 
-		;;reverse the color of the cursor, if applicable
-		#+nil
-		(when (and
-		       (not (eq :invisible cursor-mode))
-		       (= cursor-x x)
-		       (= cursor-y y))
-		  (setf glyph
-			(gen-glyph (glyph-value glyph)
-				   (logxor (glyph-attributes glyph)
-					   (case cursor-mode
-					     (:normal (logior a_reverse))
-					     (:very-visible (logior a_reverse a_bold
-								    a_underline))
-					     (otherwise 0))))))
-		(set-virtual-window xdest
-				    ydest
-				    glyph
-				    )))))))))
+                ;;reverse the color of the cursor, if applicable
+                #+nil
+                (when (and
+                       (not (eq :invisible cursor-mode))
+                       (= cursor-x x)
+                       (= cursor-y y))
+                  (setf glyph
+                        (gen-glyph (glyph-value glyph)
+                                   (logxor (glyph-attributes glyph)
+                                           (case cursor-mode
+                                             (:normal (logior a_reverse))
+                                             (:very-visible (logior a_reverse a_bold
+                                                                    a_underline))
+                                             (otherwise 0))))))
+                (set-virtual-window xdest
+                                    ydest
+                                    glyph
+                                    )))))))))
 
 (defparameter *update-p* nil)
 (defun ncurses-doupdate ()
@@ -665,7 +665,7 @@ If ch is a tab, newline, or backspace, the cursor is moved appropriately within 
 (defun ncurses-curs-set (value)
   "The curs_set routine sets the cursor state is set to invisible, normal, or very visible for visibility equal to 0, 1, or 2 respectively. If the terminal supports the visibility requested, the previous cursor state is returned; otherwise, ERR is returned."
   (setf *cursor-state*
-	(case value
-	  (0 :invisible)
-	  (1 :normal)
-	  (2 :very-visible))))
+        (case value
+          (0 :invisible)
+          (1 :normal)
+          (2 :very-visible))))

@@ -22,7 +22,7 @@
 (defparameter *quit-token* nil)
 (defmacro with-quit-token ((&optional (value '(cons "default" "quit token"))) &body body)
   `(let ((*quit-token* ,value)
-	 (window:*status* nil)) ;;[FIXME]nil = alive
+         (window:*status* nil)) ;;[FIXME]nil = alive
      (catch *quit-token*
        ,@body)))
 
@@ -36,28 +36,28 @@
   ;;Save *standard-output* 
   (let* ((stdo *standard-output*))
     (flet ((fun ()
-	     (declare (optimize (debug 3)))
-	     ;;restore *standard-output* from the thread
-	     (let ((*standard-output* stdo))
-	       (window:wrapper args		     
-		 (setf window:*resize-hook* 'root-window-change)
-		 (dolist (item '(h w))
-		   (deflazy:refresh item t))
-		 (window:set-vsync t)
-		 (with-quit-token ((cons "trampoline" "token"))
-		   (glhelp:with-gl-context (nil)
-		     (gl:enable :scissor-test)
-		     (funcall start-fun)))))))
+             (declare (optimize (debug 3)))
+             ;;restore *standard-output* from the thread
+             (let ((*standard-output* stdo))
+               (window:wrapper args                  
+                 (setf window:*resize-hook* 'root-window-change)
+                 (dolist (item '(h w))
+                   (deflazy:refresh item t))
+                 (window:set-vsync t)
+                 (with-quit-token ((cons "trampoline" "token"))
+                   (glhelp:with-gl-context (nil)
+                     (gl:enable :scissor-test)
+                     (funcall start-fun)))))))
       (cond
-	(*main-subthread-p*
-	 (unless (and *thread*
-		      (bordeaux-threads:thread-alive-p *thread*))
-	   (setf *thread* (bordeaux-threads:make-thread #'fun))))
-	(t
-	 #+darwin
-	 (trivial-main-thread:call-in-main-thread #'fun)
-	 #-darwin
-	 (fun))))))
+        (*main-subthread-p*
+         (unless (and *thread*
+                      (bordeaux-threads:thread-alive-p *thread*))
+           (setf *thread* (bordeaux-threads:make-thread #'fun))))
+        (t
+         #+darwin
+         (trivial-main-thread:call-in-main-thread #'fun)
+         #-darwin
+         (fun))))))
 
 (deflazy:deflazy w ()
   window:*width*)
@@ -75,11 +75,11 @@
       (get-setf-expansion session-place env)
     (with-gensyms (token)
       `(let* (,@ (mapcar #'list vars vals))
-	 (let ((,token *quit-token*))
-	   (unless (eq ,getter ,token)
-	     ,@body
-	     (multiple-value-bind ,stores ,token
-	       ,setter)))))))
+         (let ((,token *quit-token*))
+           (unless (eq ,getter ,token)
+             ,@body
+             (multiple-value-bind ,stores ,token
+               ,setter)))))))
 
 (defmacro quit (&optional form)
   `(progn

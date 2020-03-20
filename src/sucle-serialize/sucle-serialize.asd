@@ -4,12 +4,12 @@
   :description "data serialization"
   :depends-on (
 
-	       ;;for serialize
-	       #:cl-conspack
-	       #:salza2
-	       #:chipz
+               ;;for serialize
+               #:cl-conspack
+               #:salza2
+               #:chipz
 
-	       )
+               )
   :serial t
   :components 
   (

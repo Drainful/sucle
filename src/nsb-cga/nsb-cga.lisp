@@ -7,7 +7,7 @@
 
 (set-pprint-dispatch 'matrix nil)
 (declaim (ftype (sfunction (matrix
-			    single-float single-float single-float single-float
+                            single-float single-float single-float single-float
                             single-float single-float single-float single-float
                             single-float single-float single-float single-float
                             single-float single-float single-float single-float)
@@ -17,23 +17,23 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun %matrix (result
-		  m11 m12 m13 m14
-		  m21 m22 m23 m24
-		  m31 m32 m33 m34
-		  m41 m42 m43 m44)
+                  m11 m12 m13 m14
+                  m21 m22 m23 m24
+                  m31 m32 m33 m34
+                  m41 m42 m43 m44)
     "Construct MATRIX with the given elements (arguments are provided in row
 major order.)"
     (macrolet ((put (num)
-		 (let ((str (string num)))
-		   (let ((num1 (read-from-string (subseq str 1 2)))
-			 (num2 (read-from-string (subseq str 2 3))))
-		     `(setf (aref result ,(+ -1 num1 (ash (1- num2) 2))) ,num))))
-	       (putall (&rest rest)
-		 (cons 'progn (mapcar (lambda (x) (list 'put x)) rest))))
+                 (let ((str (string num)))
+                   (let ((num1 (read-from-string (subseq str 1 2)))
+                         (num2 (read-from-string (subseq str 2 3))))
+                     `(setf (aref result ,(+ -1 num1 (ash (1- num2) 2))) ,num))))
+               (putall (&rest rest)
+                 (cons 'progn (mapcar (lambda (x) (list 'put x)) rest))))
       (putall m11 m21 m31 m41
-	      m12 m22 m32 m42
-	      m13 m23 m33 m43
-	      m14 m24 m34 m44)
+              m12 m22 m32 m42
+              m13 m23 m33 m43
+              m14 m24 m34 m44)
       result)))
 
 
@@ -42,12 +42,12 @@ major order.)"
 (defun %zero-matrix (result)
   "Construct a zero matrix."
   (macrolet ((wow ()
-	       (flet ((k (num)
-			`(setf (aref result ,num) 0f0)))
-		 (let ((acc nil))
-		   (dotimes (x 16)
-		     (push (k x) acc))
-		   (push 'progn acc)))))
+               (flet ((k (num)
+                        `(setf (aref result ,num) 0f0)))
+                 (let ((acc nil))
+                   (dotimes (x 16)
+                     (push (k x) acc))
+                   (push 'progn acc)))))
     (wow)
     result))
 
@@ -66,41 +66,41 @@ major order.)"
 ;;;; MATRIX MULTIPLICATION
 
 (declaim (ftype (sfunction
-		 (matrix matrix matrix)
-		 matrix) %matrix*))
+                 (matrix matrix matrix)
+                 matrix) %matrix*))
 (defun %matrix* (result left right)
   "Multiply MATRICES. The result might not be freshly allocated if all,
 or all but one multiplicant is an identity matrix."
   (macrolet ((inline-mul (left right dest)
                `(psetf
-		 ,@ (let ((a nil))
-		      (loop for i below 4
-			   do
-			   (loop for j below 4
-			      do
-				(progn
-				  (push `(mref ,dest ,i ,j) a)
-				  (push
-				   `(+ ,@(loop for k below 4
-					    collect `(* (mref ,left ,i ,k) (mref ,right ,k ,j))))
-				   a))))
-		      (nreverse a)))))
+                 ,@ (let ((a nil))
+                      (loop for i below 4
+                           do
+                           (loop for j below 4
+                              do
+                                (progn
+                                  (push `(mref ,dest ,i ,j) a)
+                                  (push
+                                   `(+ ,@(loop for k below 4
+                                            collect `(* (mref ,left ,i ,k) (mref ,right ,k ,j))))
+                                   a))))
+                      (nreverse a)))))
     (inline-mul left right result)
     result))
 
 ;;;; TRANSFORMATIONS
 
 (declaim (ftype
-	  (sfunction
-	   (matrix single-float single-float single-float) matrix)
-	  %translate*))
+          (sfunction
+           (matrix single-float single-float single-float) matrix)
+          %translate*))
 (defun %translate* (result x y z)
   "Construct a translation matrix from translation factors X, Y and Z."
   (%matrix result
-	   1f0 0f0 0f0 x
-	   0f0 1f0 0f0 y
-	   0f0 0f0 1f0 z
-	   0f0 0f0 0f0 1f0))
+           1f0 0f0 0f0 x
+           0f0 1f0 0f0 y
+           0f0 0f0 1f0 z
+           0f0 0f0 0f0 1f0))
 
 (declaim (ftype (sfunction (matrix vec) matrix) %translate))
 (defun %translate (result vec)
@@ -109,15 +109,15 @@ translation factors."
   (%translate* result (aref vec 0) (aref vec 1) (aref vec 2)))
 
 (declaim (ftype (sfunction
-		 (matrix single-float single-float single-float)
-		 matrix) %scale*))
+                 (matrix single-float single-float single-float)
+                 matrix) %scale*))
 (defun %scale* (result x y z)
   "Construct a scaling matrix from scaling factors X, Y, and Z."
   (%matrix result
-	   x    0f0  0f0  0f0
-	   0f0  y    0f0  0f0
-	   0f0  0f0  z    0f0
-	   0f0  0f0  0f0  1f0))
+           x    0f0  0f0  0f0
+           0f0  y    0f0  0f0
+           0f0  0f0  z    0f0
+           0f0  0f0  0f0  1f0))
 
 (declaim (ftype (sfunction (matrix vec) matrix) %scale))
 (defun %scale (result vec)
@@ -126,8 +126,8 @@ scaling factors."
   (%scale* result (aref vec 0) (aref vec 1) (aref vec 2)))
 
 (declaim (ftype (sfunction
-		 (matrix
-		  single-float single-float single-float) matrix) %rotate*))
+                 (matrix
+                  single-float single-float single-float) matrix) %rotate*))
 (defun %rotate* (result x y z)
   "Construct a rotation matrix from rotation factors X, Y, Z."
   (let ((rotate (%identity-matrix result)))
@@ -164,74 +164,74 @@ rotation factors."
   (%rotate* result (aref vec 0) (aref vec 1) (aref vec 2)))
 
 (declaim (ftype (sfunction
-		 (matrix sb-cga:vec single-float) matrix) %rotate-around))
+                 (matrix sb-cga:vec single-float) matrix) %rotate-around))
 (defun %rotate-around (result v radians)
   "Construct a rotation matrix that rotates by RADIANS around VEC V. 4th
 element of V is ignored."
   (let ((c (cos radians))
-	(s (sin radians))
-	(g (- 1f0 (cos radians))))
+        (s (sin radians))
+        (g (- 1f0 (cos radians))))
     (let* ((x (aref v 0))
-	   (y (aref v 1))
-	   (z (aref v 2))
-	   (gxx (* g x x)) (gxy (* g x y)) (gxz (* g x z))
-	   (gyy (* g y y)) (gyz (* g y z)) (gzz (* g z z)))
+           (y (aref v 1))
+           (z (aref v 2))
+           (gxx (* g x x)) (gxy (* g x y)) (gxz (* g x z))
+           (gyy (* g y y)) (gyz (* g y z)) (gzz (* g z z)))
       (%matrix result
-	       (+ gxx c)        (- gxy (* s z))  (+ gxz (* s y)) 0f0
-	       (+ gxy (* s z))  (+ gyy c)        (- gyz (* s x)) 0f0
-	       (- gxz (* s y))  (+ gyz (* s x))  (+ gzz c)       0f0
-	       0f0              0f0              0f0             1f0))))
+               (+ gxx c)        (- gxy (* s z))  (+ gxz (* s y)) 0f0
+               (+ gxy (* s z))  (+ gyy c)        (- gyz (* s x)) 0f0
+               (- gxz (* s y))  (+ gyz (* s x))  (+ gzz c)       0f0
+               0f0              0f0              0f0             1f0))))
 
 (declaim (ftype (sfunction
-		 (matrix single-float
-				 single-float
-				 single-float
-				 single-float) matrix) %rotate-around*)
-	 (inline %rotate-around*))
+                 (matrix single-float
+                                 single-float
+                                 single-float
+                                 single-float) matrix) %rotate-around*)
+         (inline %rotate-around*))
 (defun %rotate-around* (result x y z radians)
   "Construct a rotation matrix that rotates by RADIANS around VEC V. 4th
 element of V is ignored."
   (let ((c (cos radians))
-	(s (sin radians))
-	(g (- 1f0 (cos radians))))
+        (s (sin radians))
+        (g (- 1f0 (cos radians))))
     (let* ((gxx (* g x x)) (gxy (* g x y)) (gxz (* g x z))
-	   (gyy (* g y y)) (gyz (* g y z)) (gzz (* g z z)))
+           (gyy (* g y y)) (gyz (* g y z)) (gzz (* g z z)))
       (%matrix result
-	       (+ gxx c)        (- gxy (* s z))  (+ gxz (* s y)) 0f0
-	       (+ gxy (* s z))  (+ gyy c)        (- gyz (* s x)) 0f0
-	       (- gxz (* s y))  (+ gyz (* s x))  (+ gzz c)       0f0
-	       0f0              0f0              0f0             1f0))))
+               (+ gxx c)        (- gxy (* s z))  (+ gxz (* s y)) 0f0
+               (+ gxy (* s z))  (+ gyy c)        (- gyz (* s x)) 0f0
+               (- gxz (* s y))  (+ gyz (* s x))  (+ gzz c)       0f0
+               0f0              0f0              0f0             1f0))))
 
 (declaim (ftype (sfunction
-		 (matrix vec vec)
-		 matrix) %reorient))
+                 (matrix vec vec)
+                 matrix) %reorient))
 (defun %reorient (result v1 v2)
   "Construct a transformation matrix to reorient V1 with V2."
   (let ((nv1 (normalize v1))
-	(nv2 (normalize v2)))
+        (nv2 (normalize v2)))
     (if (vec~ nv1 nv2)
-	(%identity-matrix result)
-	(%rotate-around result
-			(normalize (cross-product nv1 nv2))
-			(acos (dot-product nv1 nv2))))))
+        (%identity-matrix result)
+        (%rotate-around result
+                        (normalize (cross-product nv1 nv2))
+                        (acos (dot-product nv1 nv2))))))
 
 (declaim (ftype (sfunction (matrix matrix) matrix) %transpose-matrix))
 (defun %transpose-matrix (result matrix)
   "Transpose of MATRIX."
   (macrolet ((wow ()
-	       (flet ((k (i j)
-			`(setf (mref result ,i ,j) (mref matrix ,j ,i))))
-		 (let ((acc nil))
-		   (dotimes (i 4)
-		     (dotimes (j 4)
-		       (push (k i j) acc)))
-		   (cons 'progn acc)))))
+               (flet ((k (i j)
+                        `(setf (mref result ,i ,j) (mref matrix ,j ,i))))
+                 (let ((acc nil))
+                   (dotimes (i 4)
+                     (dotimes (j 4)
+                       (push (k i j) acc)))
+                   (cons 'progn acc)))))
     (wow))
   result)
 
 (declaim (ftype (sfunction
-		 (matrix matrix)
-		 matrix) %inverse-matrix))
+                 (matrix matrix)
+                 matrix) %inverse-matrix))
 (defun %inverse-matrix (result matrix)
   "Inverse of MATRIX. Signals an error if there is no inverse."
   (declare (type matrix result matrix))

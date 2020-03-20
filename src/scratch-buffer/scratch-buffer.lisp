@@ -20,32 +20,32 @@
   (bordeaux-threads:with-lock-held (*lock*)
     (let ((a *scratch-space*))
       (cond ((consp a)
-	     (pop *scratch-space*)
-	     (setf (cdr a) nil)
-	     a)
-	    (t (list (make-array 256 :element-type 'single-float)))))))
+             (pop *scratch-space*)
+             (setf (cdr a) nil)
+             a)
+            (t (list (make-array 256 :element-type 'single-float)))))))
 (defun givemem (values)
   (bordeaux-threads:with-lock-held (*lock*)
     (let ((cons *scratch-space*))
       (let ((ans (nconc cons values)))
-	(when (not (eq cons ans))
-	  (setf *scratch-space* ans))))))
+        (when (not (eq cons ans))
+          (setf *scratch-space* ans))))))
 
 (defun next-array (data)
   (let* ((last-cell (cdr data))
-	 (cons-array (or (cdr last-cell)
-			 (setf (cdr last-cell)
-			       (getmem))))
-	 (array (first cons-array))
-	 (len (array-total-size array)))
+         (cons-array (or (cdr last-cell)
+                         (setf (cdr last-cell)
+                               (getmem))))
+         (array (first cons-array))
+         (len (array-total-size array)))
     (when (null (car data))
       (setf (car data)
-	    (or last-cell
-		cons-array
-		(error "how?"))))
+            (or last-cell
+                cons-array
+                (error "how?"))))
     (setf (cdr data) cons-array)
     (values (1- len)
-	    array)))
+            array)))
 
 (defun reset-my-iterator (iterator)
   (let ((data (p-data iterator)))
@@ -59,21 +59,21 @@
 
 (defun free-my-iterator-memory (iterator)
   (let* ((cons (p-data iterator))
-	 (head (car cons)))
+         (head (car cons)))
     (givemem (cdr (car cons)))
     
     (setf (cdr cons) head)
     (setf (cdr head) nil))
   ;;cleanup
   (setf (p-array iterator) nil
-	(p-index iterator) 0))
+        (p-index iterator) 0))
 
 (defmacro flush-my-iterator ((a) &body body)
   (let ((var (gensym)))
     `(let ((,var ,a)) 
        (reset-my-iterator ,var)
        (multiple-value-prog1 (locally ,@body)
-	 (free-my-iterator-memory ,var)))))
+         (free-my-iterator-memory ,var)))))
  
 (defun iterator-fill-pointer (iterator)
   (let ((len (- (p-index iterator))))
@@ -94,7 +94,7 @@
 (defmacro start-nest (name1)
   `(defmacro ,(utility:symbolicate2 (list name1 "*")) ((&rest forms) &body body)
      `(utility:nest ,@(mapcar (lambda (x) `(,',name1 ,x)) forms)
-		    (locally ,@body))))
+                    (locally ,@body))))
 
 ;;[FIXME]refactor out for * type macros?
 (start-nest bind-in)

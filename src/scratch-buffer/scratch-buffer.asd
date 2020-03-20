@@ -5,7 +5,7 @@
 a highly optimized data structure for fast writing and ok n(1) random access,
 highly optimized iterator for writing to the reverse-array-array"
   :depends-on (#:utility
-	       #:bordeaux-threads)
+               #:bordeaux-threads)
   :components
   ( ;;iterator
    (:file "reverse-array-iterator")

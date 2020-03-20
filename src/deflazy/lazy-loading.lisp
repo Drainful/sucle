@@ -15,8 +15,8 @@
 (defun singleton (sym)
   (let ((name (get-special-name sym)))
     (if name
-	(symbol-value name)
-	(error "No default deflazy: ~a" sym))))
+        (symbol-value name)
+        (error "No default deflazy: ~a" sym))))
 
 (defun refresh (thing &optional (same-thread nil))
   ;;refresh symbol -> look it up
@@ -30,8 +30,8 @@
    :same-thread same-thread)
   (values))
 (defun getfnc (thing
-	       ;; &optional (namespace *namespace*)
-		    )
+               ;; &optional (namespace *namespace*)
+                    )
   ;;getfnc symbol -> look it up
   ;;getfnc node -> fulfill node
   (dependency-graph:%get-value
@@ -69,16 +69,16 @@
      ;;define the creator function, saving its lambda-list for future reference
      ;;The lambda-list
      (let ((lambda-list (third form))
-	   (name (second form)))
+           (name (second form)))
        `(progn
-	  (set-lambda-list ',name ',lambda-list)
-	  ,form)
+          (set-lambda-list ',name ',lambda-list)
+          ,form)
        ))
     ((apply)
      ;;
      (let ((name (second form)))
        (utility:once-only (name)
-	 `(%defdep ,name (list* ,@ (nthcdr 2 form)) (get-lambda-list ,name) ,name))))))
+         `(%defdep ,name (list* ,@ (nthcdr 2 form)) (get-lambda-list ,name) ,name))))))
 (defmacro lazgen (name &rest args)
   `(dlaz (apply ',name ,@args nil)))
 (defmacro define-lazgen (name lambda-list &body body)
@@ -93,18 +93,18 @@
   (let ((special-name (special-name name)))
     `(progn
        (define-lazgen ,name ,(mapcar (lambda (x)
-				       (etypecase x
-					 (symbol x)
-					 (cons (car x))))
-				     deps)
-	 ,@body)
+                                       (etypecase x
+                                         (symbol x)
+                                         (cons (car x))))
+                                     deps)
+         ,@body)
        (set-special-name ',name ',special-name)
        (defvar ,special-name
-	 (lazgen ,name
-		 ,@(mapcar (lambda (x)
-			     (special-name
-			      (etypecase x
-				(symbol x)
-				(cons (second x)))))
-			   deps)))
+         (lazgen ,name
+                 ,@(mapcar (lambda (x)
+                             (special-name
+                              (etypecase x
+                                (symbol x)
+                                (cons (second x)))))
+                           deps)))
        (dependency-graph:refresh-old-node ,special-name))))

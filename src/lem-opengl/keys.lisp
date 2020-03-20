@@ -3,7 +3,7 @@
 (defparameter *keycodes2* (make-hash-table))
 (defun define-key-code (sym &optional glfw3-code)
   (setf (gethash glfw3-code *keycodes2*)
-	sym))
+        sym))
 (defun get-sym-from-glfw3-code (code)
   (gethash code *keycodes2*))
 

@@ -18,14 +18,14 @@
 ;;;;convenience stuff below
 #+nil
 (defmacro with-named-node ((node-var &optional (namespace 'namespace))
-				       name &optional t-form
-					      (nil-form
-					       `(no-named-node ,name)))
+                                       name &optional t-form
+                                              (nil-form
+                                               `(no-named-node ,name)))
   (let ((existsp (gensym)))
     `(multiple-value-bind (,node-var ,existsp) (get-node ,name ,namespace)
        (if ,existsp
-	   ,t-form
-	   ,nil-form))))
+           ,t-form
+           ,nil-form))))
 #+nil
 (defun no-named-node (id)
   (error "no lazy load named as ~a" id))
@@ -39,15 +39,15 @@
 #+nil
 (defmacro defdep (name (&rest pairs) &body body)
   (let ((lambda-args (mapcar 'first pairs))
-	(dependencies (mapcar 'second pairs))
-	(fun-name
-	 ;;FIXME::safety through obscurity.
-	 ;;FIXME::pollutes the package?
-	 (utility:symbolicate2 (list "----defdep---" name))))
+        (dependencies (mapcar 'second pairs))
+        (fun-name
+         ;;FIXME::safety through obscurity.
+         ;;FIXME::pollutes the package?
+         (utility:symbolicate2 (list "----defdep---" name))))
     `(progn
        (load-time-value
-	(defun ,fun-name ,lambda-args
-	  ,@body))
+        (defun ,fun-name ,lambda-args
+          ,@body))
        (%defdep ',fun-name (list ,@dependencies) ',lambda-args ',name))))
 
 
@@ -57,12 +57,12 @@
   ;;Run this function in the repl, then
   ;;redefine it here. 
   (let* ((foo (defdep defdep-foo-test ((a 56)
-				       (b "hello"))
-		(let ((c (random 100000)))		  
-		  (list a b c)))))
+                                       (b "hello"))
+                (let ((c (random 100000)))                
+                  (list a b c)))))
     (dotimes (i 10)
       (unless what
-	(sleep 1))
+        (sleep 1))
       (refresh foo t)
       (print (getfnc foo)))
     foo))
@@ -85,11 +85,11 @@
 #+nil
 (defun get-value-no-update (id &optional (namespace *namespace*))
   (with-named-node (node) id
-		   (dependency-graph:node-value node)))
+                   (dependency-graph:node-value node)))
 #+nil
 (defun invalidate-node (id &optional (namespace *namespace*))
   (with-named-node (node) id
-		   (dependency-graph:%invalidate-node node)))
+                   (dependency-graph:%invalidate-node node)))
 
 #+nil
 (defun %map-dependents (node fun)
@@ -101,7 +101,7 @@
 #+nil
 (defun map-dependents (name fun &optional (namespace *namespace*))
   (with-named-node (node) name
-		   (%map-dependents node fun)))
+                   (%map-dependents node fun)))
 
 #+nil
 (defun print-dependents (name)
@@ -110,7 +110,7 @@
 #+nil
 (defun map-dependents2 (name fun test &optional (namespace *namespace*))
   (with-named-node (node) name
-		   (%map-dependents2 node fun test)))
+                   (%map-dependents2 node fun test)))
 
 #+nil
 (defmacro defnode (name deps &body body)
@@ -131,10 +131,10 @@
   (with-named-node
       (node) id
       (progn
-	(remhash id namespace)
-	(map nil
-	     (lambda (x) (remove-dependent node x))
-	     (dependencies node)))))
+        (remhash id namespace)
+        (map nil
+             (lambda (x) (remove-dependent node x))
+             (dependencies node)))))
 ;;;;;
 #+nil
 (defun test90 ()
@@ -147,13 +147,13 @@
    (get-node 'test1) :bar))
 #+nil
 (defvar *bar* (defdep bar ((hello "world") (foo 34))
-		(list hello foo)))
+                (list hello foo)))
 #+nil
 (defvar *yon* (defdep yon ((what *bar*) (what2 *bar*))
-		(list what what2)))
+                (list what what2)))
 #+nil
 (defvar *bar* (defdep bar ((hello "wod") (foo 34))
-		(list hello foo)))
+                (list hello foo)))
 
 
 ;;Run test-dlaz, and redefine foo while it is running.
@@ -168,7 +168,7 @@
 (defun test-dlaz ()
   (let*
       ((foo1 (dlaz ;;creates new lazy nodes/promises
-	      (apply 'foo 1 2 4 ())))
+              (apply 'foo 1 2 4 ())))
         ;;creates new lazy nodes/promises
        (foo2 (lazgen foo 1 foo1 foo1))
        (foo2-1 (lazgen foo2 foo2 foo2 foo2)))
@@ -199,49 +199,49 @@
     ;;Convert a deflazy specification into a
     ;;function and body.
     (let (lambda-args
-	  node-deps
-	  tags
-	  (count 0))
+          node-deps
+          tags
+          (count 0))
       (dolist (item specification)
-	(let (dep
-	      tag
-	      arg)
-	  
-	  (trivia:match
-	   item
-	   ((list* item adep)
-	    (when adep
-	      ;;(... baz)
-	      (setf dep (car adep)))
-	    
-	    (trivia:match
-	     item
-	     ((list* var a-tag)
-	      ;;((foo ...) ...)
-	      (setf arg var)
-	      (when a-tag
-		;;((foo bar) ...)
-		(setf tag (car a-tag))))
-	     ;;(foo ...)
-	     (_
-	      (setf arg item))))
-	   ;;foo
-	   (_
-	    (setf arg item
-		  dep item)))
+        (let (dep
+              tag
+              arg)
+          
+          (trivia:match
+           item
+           ((list* item adep)
+            (when adep
+              ;;(... baz)
+              (setf dep (car adep)))
+            
+            (trivia:match
+             item
+             ((list* var a-tag)
+              ;;((foo ...) ...)
+              (setf arg var)
+              (when a-tag
+                ;;((foo bar) ...)
+                (setf tag (car a-tag))))
+             ;;(foo ...)
+             (_
+              (setf arg item))))
+           ;;foo
+           (_
+            (setf arg item
+                  dep item)))
 
-	  (push arg lambda-args)
-	  (push (or dep arg) node-deps)
-	  (when tag
-	    (push (cons tag count) tags)))
-	(incf count))
+          (push arg lambda-args)
+          (push (or dep arg) node-deps)
+          (when tag
+            (push (cons tag count) tags)))
+        (incf count))
       (values (nreverse lambda-args)
-	      (nreverse node-deps)
-	      tags))))
+              (nreverse node-deps)
+              tags))))
 #+nil
 (defun test-defnode ()
   (print (multiple-value-list
-	  (%defnode '(foo bar (baz) ((yon qux)) (woo foobar) ((1 2) 3))))))
+          (%defnode '(foo bar (baz) ((yon qux)) (woo foobar) ((1 2) 3))))))
 
 ;;;;;[FIXME]: clean this area up with dependency graph 
 
@@ -250,16 +250,16 @@
   (let
       ;;Make sure the node is in the namespace
       ((node
-	(or
-	 ;;It either exists
-	 (multiple-value-bind (node existsp) (get-node name)
-	   (if existsp
-	       node
-	       nil))
-	 ;;Otherwise make it
-	 (let ((new (make-instance 'dependency-graph:node)))
-	   (set-node name new)
-	   new))))
+        (or
+         ;;It either exists
+         (multiple-value-bind (node existsp) (get-node name)
+           (if existsp
+               node
+               nil))
+         ;;Otherwise make it
+         (let ((new (make-instance 'dependency-graph:node)))
+           (set-node name new)
+           new))))
     (dependency-graph:with-locked-lock (node)
       ;;Queue it for cleanup if it already exists
       (dependency-graph:refresh-old-node node)
@@ -267,14 +267,14 @@
        fun
        node
        (mapcar
-	(lambda (dep-name)
-	  (multiple-value-bind (node existp) (get-node dep-name)
-	    (unless existp
-	      (error "node node named:~a ~%while loading name" dep-name))
-	    node))
-	dependencies
-	;;,(cons 'list node-deps)
-	)
+        (lambda (dep-name)
+          (multiple-value-bind (node existp) (get-node dep-name)
+            (unless existp
+              (error "node node named:~a ~%while loading name" dep-name))
+            node))
+        dependencies
+        ;;,(cons 'list node-deps)
+        )
        name
        tags))
     node))

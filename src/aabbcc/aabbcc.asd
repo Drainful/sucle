@@ -3,7 +3,7 @@
   :license "MIT"
   :description "a blocky axis aligned physics engine"
   :depends-on (#:utility
-	       #:quads)
+               #:quads)
   :serial t
   :components 
   ((:file "aabbcc")))

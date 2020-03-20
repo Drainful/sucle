@@ -10,42 +10,42 @@
 (defun load-the-glfw-library ()
   (unless *glfw-library-loaded*
     (flet ((pexit (type)
-	     (setf *glfw-library-loaded* type)
-	     (return-from load-the-glfw-library t)))
+             (setf *glfw-library-loaded* type)
+             (return-from load-the-glfw-library t)))
       (or
        (block try-load-local
-	 ;;this section ripped from cl-glfw3
-	 (cffi:define-foreign-library (glfw)
-	   (:darwin (:or
-		     ;; homebrew naming
-		     "libglfw3.1.dylib" "libglfw3.dylib"
-		     ;; cmake build naming
-		     "libglfw.3.1.dylib" "libglfw.3.dylib"))
-	   (:unix (:or "libglfw.so.3.1" "libglfw.so.3"))
-	   (:windows "glfw3.dll")
-	   (t (:or (:default "libglfw3") (:default "libglfw"))))
-	 
-	 (handler-case (progn (cffi:use-foreign-library glfw)
-			      (pexit "Local"))
-	   (cffi:load-foreign-library-error (c)
-	     ;;the library does not exist
-	     (declare (ignorable c))
-	     (return-from try-load-local nil))))
+         ;;this section ripped from cl-glfw3
+         (cffi:define-foreign-library (glfw)
+           (:darwin (:or
+                     ;; homebrew naming
+                     "libglfw3.1.dylib" "libglfw3.dylib"
+                     ;; cmake build naming
+                     "libglfw.3.1.dylib" "libglfw.3.dylib"))
+           (:unix (:or "libglfw.so.3.1" "libglfw.so.3"))
+           (:windows "glfw3.dll")
+           (t (:or (:default "libglfw3") (:default "libglfw"))))
+         
+         (handler-case (progn (cffi:use-foreign-library glfw)
+                              (pexit "Local"))
+           (cffi:load-foreign-library-error (c)
+             ;;the library does not exist
+             (declare (ignorable c))
+             (return-from try-load-local nil))))
        
        #+(and
-	  (or darwin linux windows)
-	  (or x86 x86-64))
+          (or darwin linux windows)
+          (or x86 x86-64))
        (block try-load-glfw-blob
-	 (cond
-	   ;;try finding it in asdf
-	   ((asdf:find-system :glfw-blob nil)
-	    (asdf:load-system :glfw-blob)
-	    (values (pexit "glfw-blob through asdf")))
-	   #+quicklisp
-	   (t
-	    (ql:quickload :glfw-blob)
-	    (values (pexit "glfw-blob through quicklisp")))
-	   (t nil)))
+         (cond
+           ;;try finding it in asdf
+           ((asdf:find-system :glfw-blob nil)
+            (asdf:load-system :glfw-blob)
+            (values (pexit "glfw-blob through asdf")))
+           #+quicklisp
+           (t
+            (ql:quickload :glfw-blob)
+            (values (pexit "glfw-blob through quicklisp")))
+           (t nil)))
 
        (error "no suitable library found for glfw!!!!")))))
 
@@ -207,59 +207,59 @@
 (defun to-claw (prefix sym &key (errorp t))
   (let ((string (concatenate 'string "+" prefix "-"(symbol-name sym) "+")))
     (multiple-value-bind (sym existsp)
-	(find-symbol
-	 string
-	 (find-package "%GLFW"))
+        (find-symbol
+         string
+         (find-package "%GLFW"))
       (if existsp
-	  (values sym t)
-	  (if errorp
-	      (error "~a not found in %GLFW package" string)
-	      (values nil nil))))))
+          (values sym t)
+          (if errorp
+              (error "~a not found in %GLFW package" string)
+              (values nil nil))))))
 (defun substitute-foreign-enum-value (type name)
   (symbol-value (to-claw type name)))
 (defparameter *mouse-array*
   (let ((array (make-array 8 :element-type '(unsigned-byte 8))))
     (dolist (x *modified-mouse-enums*)
       (when (listp x)
-	(setf (aref array
-		    (substitute-foreign-enum-value "MOUSE-BUTTON" (first x)))
-	      (second x))))
+        (setf (aref array
+                    (substitute-foreign-enum-value "MOUSE-BUTTON" (first x)))
+              (second x))))
     array))
 (defparameter *key-array*
   (let ((array (make-array 349 :element-type '(unsigned-byte 8))))
     (dolist (x *modified-key-enums*)
       (when (listp x)
-	(setf (aref array
-		    (substitute-foreign-enum-value "KEY" (first x)))
-	      (second x))))
+        (setf (aref array
+                    (substitute-foreign-enum-value "KEY" (first x)))
+              (second x))))
     array))
 (defparameter *character-keys*
   (let ((array (make-array 128 :element-type 'bit :initial-element 0)))
     (dotimes (i 97)
       (unless (zerop (aref *key-array* i))
-	(setf (sbit array i) 1)))
+        (setf (sbit array i) 1)))
     array))
 ;;escape, delete, backspace, tab, return/enter? are ascii?
 (defparameter *back-map* 
   (let ((back-map (make-array 128)))
     (dolist (item *modified-mouse-enums*)
       (when (listp item)
-	(setf (aref back-map (second item))
-	      (cons :mouse (first item)))))
+        (setf (aref back-map (second item))
+              (cons :mouse (first item)))))
     (dolist (item *modified-key-enums*)
       (when (listp item)
-	(setf (aref back-map (second item))
-	      (cons :key (first item)))))
+        (setf (aref back-map (second item))
+              (cons :key (first item)))))
     back-map)))
 
 (defun back-value (n)
   (let ((cell (aref *back-map* n)))
     (values (cdr cell)
-	    (case (car cell)
-	      (:key
-	       :key)
-	      (:mouse
-	       :mouse)))))
+            (case (car cell)
+              (:key
+               :key)
+              (:mouse
+               :mouse)))))
 
 ;;Cache the translation from lisp object to key enum.
 ;;This saves time from symbol mangling.
@@ -269,31 +269,31 @@
 (defun mouseval (identifier)
   (multiple-value-bind (item existp) (gethash identifier *mouse-enum-cache*)
     (cond (existp item)
-	  (t
-	   (let ((new
-		  (etypecase identifier
-		    (keyword
-		     (aref *mouse-array*
-			   (substitute-foreign-enum-value "MOUSE-BUTTON" identifier)))
-		    (integer
-		     (aref *mouse-array* (1- identifier))))))
-	     (setf (gethash identifier *mouse-enum-cache*) new)
-	     new)))))
+          (t
+           (let ((new
+                  (etypecase identifier
+                    (keyword
+                     (aref *mouse-array*
+                           (substitute-foreign-enum-value "MOUSE-BUTTON" identifier)))
+                    (integer
+                     (aref *mouse-array* (1- identifier))))))
+             (setf (gethash identifier *mouse-enum-cache*) new)
+             new)))))
 (defun keyval (identifier)
   (multiple-value-bind (item existp) (gethash identifier *key-enum-cache*)
     (cond (existp item)
-	  (t
-	   (let ((new
-		  (etypecase identifier
-		    (keyword
-		     (aref *key-array*
-			   (substitute-foreign-enum-value "KEY" identifier)))
-		    (character
-		     (char-code (char-upcase identifier)))
-		    (integer
-		     (char-code (digit-char identifier))))))
-	     (setf (gethash identifier *key-enum-cache*) new)
-	     new)))))
+          (t
+           (let ((new
+                  (etypecase identifier
+                    (keyword
+                     (aref *key-array*
+                           (substitute-foreign-enum-value "KEY" identifier)))
+                    (character
+                     (char-code (char-upcase identifier)))
+                    (integer
+                     (char-code (digit-char identifier))))))
+             (setf (gethash identifier *key-enum-cache*) new)
+             new)))))
 
 (defconstant +shift+ 1)
 (defconstant +control+ 2)
@@ -363,23 +363,23 @@ for the current implementation."
     (setf *mod-keys* mod-keys)
     (unless (= key -1)
       (let ((location (aref (etouq *key-array*) key)))
-	(when (= action 2)
-	  (setf (sbit *repeat-state* location) 1))
-	(setf (sbit *input-state*
-		    location)
-	      (if (zerop action)
-		  0
-		  1))))))
+        (when (= action 2)
+          (setf (sbit *repeat-state* location) 1))
+        (setf (sbit *input-state*
+                    location)
+              (if (zerop action)
+                  0
+                  1))))))
 
 (glfw:define-mouse-button-callback mouse-callback (window button action mod-keys)
   (declare (ignorable window))
   (with-float-traps-restored
     (setf *mod-keys* mod-keys)
     (setf (sbit *input-state*
-		(aref (etouq *mouse-array*) button))
-	  (if (zerop action)
-	      0
-	      1))))
+                (aref (etouq *mouse-array*) button))
+          (if (zerop action)
+              0
+              1))))
 ;;;
 
 #+nil
@@ -392,7 +392,7 @@ for the current implementation."
 (defmacro define-char-mods-callback (name (window codepoint mod-keys) &body body)
   `(claw:defcallback ,name :void ((,window (:pointer %glfw:window))
                                   (,codepoint :unsigned-int)
-				  (,mod-keys :int))
+                                  (,mod-keys :int))
      ,@body))
 ;;;[FIXME]move to bodge-glfw?
 (define-char-mods-callback char-mods-callback (window char mod-keys)
@@ -405,7 +405,7 @@ for the current implementation."
 (defmacro define-drop-callback (name (window count paths) &body body)
   `(claw:defcallback ,name :void ((,window (:pointer %glfw:window))
                                   (,count :int)
-				  (,paths (:pointer (:pointer :char))))
+                                  (,paths (:pointer (:pointer :char))))
      ,@body))
 ;;;[FIXME]move to bodge-glfw?
 (define-drop-callback drop-callback (window count paths)
@@ -439,7 +439,7 @@ for the current implementation."
 (defun init ()
   (reset-control-state *control-state*)
   (setf *scroll-x* 0.0
-	*scroll-y* 0.0)
+        *scroll-y* 0.0)
   (setq *status* nil)
   #+sbcl (sb-int:set-floating-point-modes :traps nil))
 
@@ -461,16 +461,16 @@ for the current implementation."
     (print *dropped-files*))
   (setf *dropped-files* nil)
   (setq *status* (let ((value (%glfw:window-should-close *window*)))
-		   (cond ((eql value %glfw:+true+) t)
-			 ((eql value %glfw:+false+) nil)
-			 (t (error "what is this value? ~a" value)))))
+                   (cond ((eql value %glfw:+true+) t)
+                         ((eql value %glfw:+false+) nil)
+                         (t (error "what is this value? ~a" value)))))
   (poll-events)
   ;;;[FIXME]mod keys only updated indirectly through mouse or key or unicode char callback
   (let ((mods *mod-keys*))
     (setf *shift* (logtest +shift+ mods)
-	  *control* (logtest +control+ mods)
-	  *alt* (logtest +alt+ mods)
-	  *super* (logtest +super+ mods))))
+          *control* (logtest +control+ mods)
+          *alt* (logtest +alt+ mods)
+          *super* (logtest +super+ mods))))
 
 
 (defparameter *defaults*  
@@ -483,35 +483,35 @@ for the current implementation."
   (alexandria:with-gensyms (window extra)
     (alexandria:once-only (window-keys)
       `(let* ((,extra (append ,window-keys *defaults*))
-	      (,window
-	       (%glfw:create-window
-		(getf 
-		 ,extra
-		 :width)
-		(getf 
-		 ,extra
-		 :height)
-		(getf 
-		 ,extra
-		 :title)
-		(getf 
-		 ,extra
-		 :monitor)
-		(getf 
-		 ,extra
-		 :shared))))
-	 (unwind-protect
-	      (progn
-		(let ((*window* ,window))
-		  (%glfw:make-context-current ,window)
-		  ,@body))
-	   (%glfw:destroy-window ,window))))))
+              (,window
+               (%glfw:create-window
+                (getf 
+                 ,extra
+                 :width)
+                (getf 
+                 ,extra
+                 :height)
+                (getf 
+                 ,extra
+                 :title)
+                (getf 
+                 ,extra
+                 :monitor)
+                (getf 
+                 ,extra
+                 :shared))))
+         (unwind-protect
+              (progn
+                (let ((*window* ,window))
+                  (%glfw:make-context-current ,window)
+                  ,@body))
+           (%glfw:destroy-window ,window))))))
 
 (defparameter *window* nil)
 ;;Graphics calls on OS X must occur in the main thread
 (defun set-callbacks (&optional (window *window*))
   (%glfw:set-mouse-button-callback window
-				   (cffi:get-callback 'mouse-callback))
+                                   (cffi:get-callback 'mouse-callback))
   (%glfw:set-key-callback window (cffi:get-callback 'key-callback))
   (%glfw:set-scroll-callback window (cffi:get-callback 'scroll-callback))
   (%glfw:set-window-size-callback window (cffi:get-callback 'update-viewport))
@@ -525,18 +525,18 @@ for the current implementation."
     `(with-float-traps-saved-and-masked
        (load-the-glfw-library)
        (glfw:with-init ()
-	 (init)
-	 (glfw:with-window-hints
-	     ;;[FIXME]better interface?
-	     ((%glfw:+resizable+ (if (getf ,args :resizable)
-				     %glfw:+true+
-				     %glfw:+false+)))
-	   (with-window ,args
-	     (set-callbacks)
-	     (setf (values *width*
-			   *height*)
-		   (get-window-size))
-	     ,@body))))))
+         (init)
+         (glfw:with-window-hints
+             ;;[FIXME]better interface?
+             ((%glfw:+resizable+ (if (getf ,args :resizable)
+                                     %glfw:+true+
+                                     %glfw:+false+)))
+           (with-window ,args
+             (set-callbacks)
+             (setf (values *width*
+                           *height*)
+                   (get-window-size))
+             ,@body))))))
 
 (defun get-mouse-out ()
   (%glfw:set-input-mode *window*  %glfw:+cursor+ %glfw:+cursor-normal+))
@@ -556,7 +556,7 @@ for the current implementation."
 
 (defun push-dimensions (width height)
   (setf *width* width
-	*height* height)
+        *height* height)
   (%glfw:set-window-size *window* width height))
 
 (defun set-caption (caption)
@@ -572,10 +572,10 @@ for the current implementation."
 
 (defun get-window-size (&optional (window *window*))
   (cffi:with-foreign-objects ((w :int)
-			      (h :int))
+                              (h :int))
     (%glfw:get-window-size window w h)
     (values (cffi:mem-ref w :int)
-	    (cffi:mem-ref h :int))))
+            (cffi:mem-ref h :int))))
 
 (defun get-mouse-position (&optional (window *window*)) 
   (cffi:with-foreign-objects ((x :double) (y :double))

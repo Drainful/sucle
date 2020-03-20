@@ -26,20 +26,20 @@
 (defmacro with-open-database2 (&body body)
   (utility:with-gensyms (handle)
     `(let* ((,handle (get-handle))
-	    (*db* ,handle))
+            (*db* ,handle))
        (unwind-protect (locally
-			   ,@body)
-	 (release-handle ,handle)))))
+                           ,@body)
+         (release-handle ,handle)))))
 (defparameter *write-write-lock* (bt:make-lock))
 (defparameter *write-locks* (make-hash-table))
 (defun get-write-lock (db)
   (bt:with-lock-held (*write-write-lock*)
     (let ((lock (gethash db *write-locks*)))
       (unless lock
-	(let ((new-lock (bt:make-lock "db-write-lock")))
-	  ;;FIXME::The *write-locks* table is not thread safe?
-	  (setf (gethash db *write-locks*) new-lock
-		lock new-lock)))
+        (let ((new-lock (bt:make-lock "db-write-lock")))
+          ;;FIXME::The *write-locks* table is not thread safe?
+          (setf (gethash db *write-locks*) new-lock
+                lock new-lock)))
       lock)))
 (defmacro with-locked-db ((db) &body body) 
   `(bordeaux-threads:with-lock-held ((get-write-lock ,db))
@@ -60,10 +60,10 @@
     #+nil
     (sxql:yield
      (sxql:create-table ("documents" :if-not-exists t)
-	 ((filename :type 'text
-		    :primary-key t)
-	  (filesize :type 'bigint)
-	  (content :type 'blob))))
+         ((filename :type 'text
+                    :primary-key t)
+          (filesize :type 'bigint)
+          (content :type 'blob))))
     #+nil
     "CREATE TABLE documents(
   filename TEXT PRIMARY KEY,  -- Name of file
@@ -86,31 +86,31 @@
        (format t "[updating ~a]" filename)
        ;;If it exists, update it
        (execute-non-query *db*
-			  (format nil
-				  "update ~a SET content = ? WHERE (filename LIKE ?)"
-				  (error-scrub table))
-			  data filename))
+                          (format nil
+                                  "update ~a SET content = ? WHERE (filename LIKE ?)"
+                                  (error-scrub table))
+                          data filename))
       (t
        (format t "[new row ~a]" filename)
        ;;If it doesn't, create a new row.
        (execute-non-query *db*
-			  (format nil
-				  "insert into ~a (filename, content) values (?, ?)"
-				  (error-scrub table))
-			  filename data)))
+                          (format nil
+                                  "insert into ~a (filename, content) values (?, ?)"
+                                  (error-scrub table))
+                          filename data)))
     (format t "[succesfully saved ~a]" filename)))
 
 (defun does-file-exist (filename &optional (table *documents*))
   (/= 0
       (execute-single *db*
-		      (format nil "SELECT EXISTS(SELECT 1 FROM ~a WHERE filename = ? LIMIT 1)" 
-			      (error-scrub table))
-		      filename)))
+                      (format nil "SELECT EXISTS(SELECT 1 FROM ~a WHERE filename = ? LIMIT 1)" 
+                              (error-scrub table))
+                      filename)))
 
 (defun all-data (&optional (table *documents*))
   (execute-to-list *db*
-		   (format nil "SELECT * FROM ~a" 
-			   (error-scrub table))))
+                   (format nil "SELECT * FROM ~a" 
+                           (error-scrub table))))
 
 (defun retreive (filename &optional (table *documents*))
   ;;(format t "~%existence-test ~s" filename)
@@ -120,16 +120,16 @@
     (when (does-file-exist filename)
       ;;(format t "~%retrieving ~s" filename)
       (execute-single *db*
-		      (format nil "select content from ~a where filename = ?" 
-			      (error-scrub table))
-		      filename))))
+                      (format nil "select content from ~a where filename = ?" 
+                              (error-scrub table))
+                      filename))))
 
 (defun delete-entry (filename &optional (table *documents*))
   (execute-non-query *db*
-		     (format nil
-			     "DELETE FROM ~a WHERE filename = ?"
-			     (error-scrub table))
-		     filename))
+                     (format nil
+                             "DELETE FROM ~a WHERE filename = ?"
+                             (error-scrub table))
+                     filename))
 
 (defun all-table-names ()
   (execute-to-list *db* "SELECT name FROM sqlite_master WHERE type='table'"))

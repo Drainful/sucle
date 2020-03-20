@@ -4,7 +4,7 @@
 ;;;;************************************************************************;;;;
 ;;;;<BOXES?>
 (defun create-aabb (&optional (maxx 1.0) (maxy maxx) (maxz maxx)
-		      (minx (- maxx)) (miny (- maxy)) (minz (- maxz)))
+                      (minx (- maxx)) (miny (- maxy)) (minz (- maxz)))
   (aabbcc:make-aabb
    :minx minx
    :maxx maxx
@@ -30,22 +30,22 @@
   (* n (round (/ x n))))
 (defparameter *player-aabb*
   (apply #'create-aabb
-	 (mapcar 'round-to-nearest	 
-		 '(0.3 0.12 0.3 -0.3 -1.5 -0.3))))
+         (mapcar 'round-to-nearest       
+                 '(0.3 0.12 0.3 -0.3 -1.5 -0.3))))
 
 ;;;a very small cubic fist
 (defparameter *fist-aabb* (create-aabb 0.00005))
 
 (defparameter *chunk-aabb*
   (apply 'create-aabb
-	 (mapcar 'floatify
-		 (list
-		  voxel-chunks:*chunk-size-x*
-		  voxel-chunks:*chunk-size-y*
-		  voxel-chunks:*chunk-size-z*
-		  0.0
-		  0.0
-		  0.0))))
+         (mapcar 'floatify
+                 (list
+                  voxel-chunks:*chunk-size-x*
+                  voxel-chunks:*chunk-size-y*
+                  voxel-chunks:*chunk-size-z*
+                  0.0
+                  0.0
+                  0.0))))
 
 (defparameter *big-fist-aabb*
   (create-aabb
@@ -57,20 +57,20 @@
 (defun configure-world-path
     (&optional
        (world
-	;;"first/"
-	;;#+nil
-	;;"test/"
-	"other/"
-	;;"third/"
-	;;"ridikulisp/"
-	)
+        ;;"first/"
+        ;;#+nil
+        ;;"test/"
+        "other/"
+        ;;"third/"
+        ;;"ridikulisp/"
+        )
        (working-dir
-	(sucle-temp:path "save/")
-	#+nil
-	(cdr (assoc (machine-instance) 
-		    '(("gm3-iMac" . #P"/media/imac/share/space/lispysaves/saves/sandbox-saves/")
-		      ("nootboke" . #P"/home/terminal256/Documents/saves/"))
-		    :test 'equal))))
+        (sucle-temp:path "save/")
+        #+nil
+        (cdr (assoc (machine-instance) 
+                    '(("gm3-iMac" . #P"/media/imac/share/space/lispysaves/saves/sandbox-saves/")
+                      ("nootboke" . #P"/home/terminal256/Documents/saves/"))
+                    :test 'equal))))
   (setf world:*world-directory* world)
   (setf world:*some-saves* working-dir))
 (defun start ()
@@ -79,7 +79,7 @@
 (defun sucle-app ()
   #+nil
   (setf (entity-fly? *ent*) nil
-	(entity-gravity? *ent*) t)
+        (entity-gravity? *ent*) t)
     ;;(our-load)
   (window:set-vsync t)
   (fps:set-fps 60)
@@ -88,7 +88,7 @@
   (voxel-chunks:clearworld)
   (setf *ent* (create-entity))
   (sucle-mp:with-initialize-multiprocessing
-   (unwind-protect (default-loop)	  
+   (unwind-protect (default-loop)         
      (when world:*persist*
        (world:msave)))))
 
@@ -100,9 +100,9 @@
    (lambda ()
      (call-with-world-meshing-lparallel 
       (lambda ()
-	(loop
-	   (application:poll-app)
-	   (per-frame)))))
+        (loop
+           (application:poll-app)
+           (per-frame)))))
    :width 720
    :height 480
    :title "conceptually simple block game"))
@@ -155,13 +155,13 @@
   ;;The application is both a mode
   ;;and a means of quitting.
   (labels ((this-function ()
-	     ;;(print "running")
-	     (unwind-protect
-		  (progn (save-modes-to-app-stack)
-		    (application::with-quit-token ()
-		      (funcall fun)))
-	       (restore-modes-to-app-stack)
-	       (pop-mode))))
+             ;;(print "running")
+             (unwind-protect
+                  (progn (save-modes-to-app-stack)
+                    (application::with-quit-token ()
+                      (funcall fun)))
+               (restore-modes-to-app-stack)
+               (pop-mode))))
     (push-mode #'this-function)))
 
 (defun default-per-frame ()
@@ -196,27 +196,27 @@
 ;;test
 (defun test-for-modes ()
   (labels ((app-entry ()
-	     (push-mode #'app)
-	     (default-loop))
-	   (app ()
-	     (when (window:button :key :repeat #\u)
-	       (print "going up!")
-	       (subapp #'app-entry))
-	     (when (window:button :key :repeat #\m)
-	       (print "another mode")
-	       (app-entry))
-	     (when (window:button :key :repeat #\n)
-	       (print "removing mode")
-	       ;;FIXME::will this pop too many modes?
-	       (pop-mode)
-	       )
-	     (when (window:button :key :repeat #\q)
-	       (print "quitting")
-	       (application:quit))
-	     (when (window:button :key :pressed #\p)
-	       (let ((*print-circle* t))
-		 (print *per-frame*)
-		 (print *app-stack*)))))
+             (push-mode #'app)
+             (default-loop))
+           (app ()
+             (when (window:button :key :repeat #\u)
+               (print "going up!")
+               (subapp #'app-entry))
+             (when (window:button :key :repeat #\m)
+               (print "another mode")
+               (app-entry))
+             (when (window:button :key :repeat #\n)
+               (print "removing mode")
+               ;;FIXME::will this pop too many modes?
+               (pop-mode)
+               )
+             (when (window:button :key :repeat #\q)
+               (print "quitting")
+               (application:quit))
+             (when (window:button :key :pressed #\p)
+               (let ((*print-circle* t))
+                 (print *per-frame*)
+                 (print *app-stack*)))))
     (enter #'app-entry)))
 
 ;;;;************************************************************************;;;;
@@ -231,9 +231,9 @@
   ;;of the cursor.
   (multiple-value-prog1
       (values (- x *raw-mouse-x*)
-	      (- y *raw-mouse-y*))
+              (- y *raw-mouse-y*))
     (setf *raw-mouse-x* x
-	  *raw-mouse-y* y)))
+          *raw-mouse-y* y)))
 
 (defparameter *mouse-x* 0.0d0)
 (defparameter *mouse-y* 0.0d0)
@@ -242,14 +242,14 @@
 (defun update-moused (clamp &optional (smoothing-factor 1.0))
   (multiple-value-bind (dx dy) (cursor-motion-difference)
     (let ((x (+ *mouse-x* dx))
-	  (y (+ *mouse-y* dy)))
+          (y (+ *mouse-y* dy)))
       ;;So looking straight up stops.
       (when (> y clamp)
-	(setf y clamp))
+        (setf y clamp))
       ;;So looking straight down stops
       (let ((negative (- clamp)))
-	(when (< y negative)
-	  (setf y negative)))
+        (when (< y negative)
+          (setf y negative)))
       (setf *mouse-x* x)
       (setf *mouse-y* y)))
   ;;*lerp-mouse-x* and *lerp-mouse-y* are used
@@ -267,8 +267,8 @@
   (let ((cos-pitch (cos pitch)))
     (with-vec (x y z) (result symbol-macrolet)
       (setf x (* cos-pitch (sin yaw))
-	    y (sin pitch)
-	    z (* cos-pitch (cos yaw)))))
+            y (sin pitch)
+            z (* cos-pitch (cos yaw)))))
   result)
 
 ;;;;************************************************************************;;;;
@@ -334,11 +334,11 @@
 
   ;;Calculate what bocks are selected etc..
   (setf *fist*
-	(mvc 'standard-fist
-	     (spread (player-position *ent*))
-	     (spread (sb-cga:vec*
-		      (camera-matrix:camera-vec-forward *camera*)
-		      (* -1.0 *reach*)))))
+        (mvc 'standard-fist
+             (spread (player-position *ent*))
+             (spread (sb-cga:vec*
+                      (camera-matrix:camera-vec-forward *camera*)
+                      (* -1.0 *reach*)))))
   (when (mode-enabled-p :fist-mode)
     (run-buttons *fist-keys*))
   (when (mode-enabled-p :god-mode)
@@ -346,34 +346,34 @@
   (when (mode-enabled-p :movement-mode)
     ;;Set the sneaking state
     (setf (entity-sneak? *ent*)
-	  (cond
-	    ((window:button :key :down :left-shift)
-	     0)
-	    ((window:button :key :down :left-control)
-	     1)))
+          (cond
+            ((window:button :key :down :left-shift)
+             0)
+            ((window:button :key :down :left-control)
+             1)))
     ;;Jump if space pressed
     (setf (entity-jump? *ent*)
-	  (window:button :key :down #\Space))
+          (window:button :key :down #\Space))
     ;;Set the direction with WASD
     (setf
      (entity-hips *ent*)
      (let ((x 0)
-	   (y 0))
+           (y 0))
        (when (window:button :key :down #\w)
-	 (decf x))
+         (decf x))
        (when (window:button :key :down #\a)
-	 (decf y))
+         (decf y))
        (when (window:button :key :down #\s)
-	 (incf x))
+         (incf x))
        (when (window:button :key :down #\d)
-	 (incf y))
+         (incf y))
        ;;[FIXME]
        ;;This used to be cached and had its own function in
        ;;the control.asd
        (if (and (zerop x)
-		(zerop y))
-	   nil			   
-	   (floatify (atan y x)))))
+                (zerop y))
+           nil                     
+           (floatify (atan y x)))))
     ;;update the internal mouse state
     ;;taking into consideration fractions
     (update-moused *mouse-multiplier-aux* 1.0))
@@ -429,20 +429,20 @@
 (defun draw-line (x0 y0 z0 x1 y1 z1 &optional (r 0.2) (g 0.0) (b 1.0))
   (floatf x0 y0 z0 x1 y1 z1)
   (let ((thing
-	 (let ((*iterator* (scratch-buffer:my-iterator)))
-	   (scratch-buffer:bind-out* ((*iterator* fun))
-	     (fun x0 y0 z0)
-	     (fun x1 y1 z1))
-	   (scratch-buffer:flush-bind-in*
-	       ((*iterator* xyz))
-	     (glhelp:create-vao-or-display-list-from-specs
-	      (:lines 2)
-	      (;;Query objects don't need the other attributes
-	       ;;(*texcoord-attr* 0.06 0.06)
-	       ;;(4 0.0 0.0 0.0 0.0)
-	       ;;(5 0.0 0.0 0.0 0.0)
-	       (3 r g b 1.0)
-	       (*position-attr* (xyz) (xyz) (xyz) 1.0)))))))
+         (let ((*iterator* (scratch-buffer:my-iterator)))
+           (scratch-buffer:bind-out* ((*iterator* fun))
+             (fun x0 y0 z0)
+             (fun x1 y1 z1))
+           (scratch-buffer:flush-bind-in*
+               ((*iterator* xyz))
+             (glhelp:create-vao-or-display-list-from-specs
+              (:lines 2)
+              (;;Query objects don't need the other attributes
+               ;;(*texcoord-attr* 0.06 0.06)
+               ;;(4 0.0 0.0 0.0 0.0)
+               ;;(5 0.0 0.0 0.0 0.0)
+               (3 r g b 1.0)
+               (*position-attr* (xyz) (xyz) (xyz) 1.0)))))))
     (glhelp:slow-draw thing)
     (glhelp:slow-delete thing)))
 
@@ -459,9 +459,9 @@
    ;;modify the camera for sneaking
    (let ((particle (entity-particle entity)))
      (if (and (not (entity-fly? entity))
-	      (eql 0 (entity-sneak? entity)))
-	 (translate-pointmass particle 0.0 0.125 0.0)
-	 particle))
+              (eql 0 (entity-sneak? entity)))
+         (translate-pointmass particle 0.0 0.125 0.0)
+         particle))
    camera
    *fraction-for-fps*)
   ;;update the camera
@@ -481,12 +481,12 @@
   (setf (camera-matrix:camera-frustum-far camera) frustum-far))
 (defun sync_particle->camera (particle camera fraction)
   (let* ((prev (pointmass-position-old particle))
-	 (curr (pointmass-position particle)))
+         (curr (pointmass-position particle)))
     (let ((vec (camera-matrix:camera-vec-position camera)))
       (nsb-cga:%vec-lerp vec prev curr fraction))))
 (defun sync_neck->camera (neck camera)
   (unit-pitch-yaw (necking-pitch neck) (necking-yaw neck)
-		  (camera-matrix:camera-vec-forward camera)))
+                  (camera-matrix:camera-vec-forward camera)))
 
 ;;;;************************************************************************;;;;
 ;;Ripped from sucle-test essentially.
@@ -500,8 +500,8 @@
   (ncurses-clone-for-lem:render :update-data t :win *view*))
 
 (defun draw-string (str x y
-		    &key (view *view*) (fg "white") (bg "black")
-		      (underline nil) (bold nil) (reverse nil))
+                    &key (view *view*) (fg "white") (bg "black")
+                      (underline nil) (bold nil) (reverse nil))
   (lem.term:with-attribute
       (:fg fg :bg bg :underline underline :bold bold :reverse reverse)
     (ncurses-clone:ncurses-mvwaddstr view y x str)))
@@ -548,25 +548,25 @@
       ,(lambda () (push-mode 'menu-mode-per-frame)))
      ((:key :pressed #\s) .
       ,(lambda ()
-	 (push-mode 'sucle-per-frame)))
+         (push-mode 'sucle-per-frame)))
      ((:key :pressed #\c) .
       ,(lambda ()
-	 (print "Clearing...")
-	 (let ((clear (assoc :clear *current-menu-data*)))
-	   (setf (second clear)
-		 (with-output-to-string (str)
-		   (let ((clearstr
-			  (make-string *menu-width*
-				       :initial-element #\space)))
-		     (dotimes (y *menu-height*)
-		       (terpri str)
-		       (write-string clearstr str))))))))
+         (print "Clearing...")
+         (let ((clear (assoc :clear *current-menu-data*)))
+           (setf (second clear)
+                 (with-output-to-string (str)
+                   (let ((clearstr
+                          (make-string *menu-width*
+                                       :initial-element #\space)))
+                     (dotimes (y *menu-height*)
+                       (terpri str)
+                       (write-string clearstr str))))))))
      ((:key :released #\c) .
       ,(lambda ()
-	 (print "Clearing Done!")
-	 (let ((clear (assoc :clear *current-menu-data*)))
-	   (setf (second clear)
-		 "")))))
+         (print "Clearing Done!")
+         (let ((clear (assoc :clear *current-menu-data*)))
+           (setf (second clear)
+                 "")))))
     ;;data to render
     ((:hello
       "
@@ -587,8 +587,8 @@ Press q/escape to quit
 ;;;;************************************************************************;;;;
 (defparameter *sky-color*
   (mapcar 'utility:byte/255
-	  ;;'(0 0 0)
-	  '(173 204 255)))
+          ;;'(0 0 0)
+          '(173 204 255)))
 (defun the-sky-color ()
   (mapcar 
    (lambda (x)
@@ -603,12 +603,12 @@ Press q/escape to quit
   (let ((aabb (pos-to-block-aabb x y z)))
     (floatf x y z)
     (mvc 'aabbcc:aabb-not-overlap
-	 aabb
-	 x y z
-	 (entity-aabb ent)
-	 (spread
-	  ;;position
-	  (entity-position ent)))))
+         aabb
+         x y z
+         (entity-aabb ent)
+         (spread
+          ;;position
+          (entity-position ent)))))
 
 (defparameter *blockid* (block-data:lookup :planks))
 (defparameter *x* 0)
@@ -629,32 +629,32 @@ Press q/escape to quit
 (defparameter *fist-keys*
   `(((:mouse :pressed :left) . 
      ,(lambda ()
-	(when (fist-exists *fist*)
-	  (multiple-value-bind (*x* *y* *z*) (spread (fist-selected-block *fist*))
-	    (funcall *left-fist-fnc*)))))
+        (when (fist-exists *fist*)
+          (multiple-value-bind (*x* *y* *z*) (spread (fist-selected-block *fist*))
+            (funcall *left-fist-fnc*)))))
     ((:mouse :pressed :right) .
      ,(lambda ()
-	(when (fist-exists *fist*)
-	  (multiple-value-bind (*x* *y* *z*) (spread (fist-normal-block *fist*))
-	    (funcall *right-fist-fnc*)))))))
+        (when (fist-exists *fist*)
+          (multiple-value-bind (*x* *y* *z*) (spread (fist-normal-block *fist*))
+            (funcall *right-fist-fnc*)))))))
 (defparameter *normal-keys*
   `(((:key :pressed #\p) .
      ,(lambda () (update-world-vao)))
     ((:key :pressed :escape) .
      ,(lambda ()
-	(window:get-mouse-out)
-	(pop-mode)))
+        (window:get-mouse-out)
+        (pop-mode)))
     ((:key :pressed #\e) .
      ,(lambda ()
-	(window:toggle-mouse-capture)
-	(set-mode-if :movement-mode (not (window:mouse-free?)))
-	(set-mode-if :fist-mode (not (window:mouse-free?)))
-	;;Flush changes to the mouse so
-	;;moving the mouse while not captured does not
-	;;affect the camera
-	;;FIXME::not implemented.
-	;;(moused)
-	))))
+        (window:toggle-mouse-capture)
+        (set-mode-if :movement-mode (not (window:mouse-free?)))
+        (set-mode-if :fist-mode (not (window:mouse-free?)))
+        ;;Flush changes to the mouse so
+        ;;moving the mouse while not captured does not
+        ;;affect the camera
+        ;;FIXME::not implemented.
+        ;;(moused)
+        ))))
 (defparameter *god-keys*
   `(;;Toggle noclip with 'v'
     ((:key :pressed #\v) .
@@ -662,7 +662,7 @@ Press q/escape to quit
     ;;Toggle flying with 'f'
     ((:key :pressed #\f) .
      ,(lambda () (toggle (entity-fly? *ent*))
-	      (toggle (entity-gravity? *ent*))))))
+              (toggle (entity-gravity? *ent*))))))
 
 ;;(defparameter *swinging* nil)
 #+nil
@@ -694,38 +694,38 @@ Press q/escape to quit
   (with-vec (px py pz) (pos)
     (with-vec (vx vy vz) (look-vec)
       (when *swinging*
-	(let ((u *big-fist-reach*))
-	  (aabbcc:aabb-collect-blocks
-	      (px py pz (* u vx) (* u vy) (* u vz)
-		  *big-fist-aabb*)
-	      (x y z contact)
-	    (declare (ignorable contact))
-	    (let ((*x* x)
-		  (*y* y)
-		  (*z* z))
-	      (funcall *big-fist-fun* x y z)))))))
+        (let ((u *big-fist-reach*))
+          (aabbcc:aabb-collect-blocks
+              (px py pz (* u vx) (* u vy) (* u vz)
+                  *big-fist-aabb*)
+              (x y z contact)
+            (declare (ignorable contact))
+            (let ((*x* x)
+                  (*y* y)
+                  (*z* z))
+              (funcall *big-fist-fun* x y z)))))))
 
   )
   #+nil
   (progn
     (when (window:button :mouse :pressed :middle)
       (with-vec (a b c) ((fist-selected-block *fist*))
-	(let ((*x* a)
-	      (*y* b)
-	      (*z* c))
-	  (funcall *middle-fist-fnc* a b c))))
+        (let ((*x* a)
+              (*y* b)
+              (*z* c))
+          (funcall *middle-fist-fnc* a b c))))
     (when (window:button :mouse :pressed :4)
       (with-vec (a b c) ((fist-selected-block *fist*))
-	(let ((*x* a)
-	      (*y* b)
-	      (*z* c))
-	  (funcall *4-fist-fnc* a b c))))
+        (let ((*x* a)
+              (*y* b)
+              (*z* c))
+          (funcall *4-fist-fnc* a b c))))
     (when (window:button :mouse :pressed :5)
       (with-vec (a b c) ((fist-selected-block *fist*))
-	(let ((*x* a)
-	      (*y* b)
-	      (*z* c))
-	  (funcall *5-fist-fnc* a b c)))))
+        (let ((*x* a)
+              (*y* b)
+              (*z* c))
+          (funcall *5-fist-fnc* a b c)))))
 
 ;;;; Changing the color of the sky based on which way we're looking.
 #+nil
@@ -738,10 +738,10 @@ Press q/escape to quit
 #+nil
 (defun neck-angle ()
   (/ (+ 1.0
-	(-
-	 (sb-cga:dot-product
-	  (sb-cga:normalize (camera-matrix:camera-vec-forward *camera*))
-	  (sb-cga:normalize *sun-direction*))))
+        (-
+         (sb-cga:dot-product
+          (sb-cga:normalize (camera-matrix:camera-vec-forward *camera*))
+          (sb-cga:normalize *sun-direction*))))
      2.0))
    #+nil
    (mapcar 
@@ -753,10 +753,10 @@ Press q/escape to quit
 #+nil
 (defun select-block-with-scroll-wheel ()
   (setf *blockid*
-	(let ((seq
-	       #(3 13 12 24 1 2 18 17 20 5 89)))
-	  (elt seq (mod (round window:*scroll-y*)
-			(length seq))))))
+        (let ((seq
+               #(3 13 12 24 1 2 18 17 20 5 89)))
+          (elt seq (mod (round window:*scroll-y*)
+                        (length seq))))))
 
 ;;FIXME -> select-block-with-scroll-wheel should use events instead?
 #+nil

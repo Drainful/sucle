@@ -20,36 +20,36 @@
     (assert (typep things 'list))
     ;;Store a lisp object to a file by simple printing
     (with-open-file
-	(stream path :direction :output :if-does-not-exist :create :if-exists :supersede)
+        (stream path :direction :output :if-does-not-exist :create :if-exists :supersede)
       (dolist (thing things)
-	(safer-print thing stream))))
+        (safer-print thing stream))))
   (defun retrieve-lisp-objects-from-file-lisp-reader (path)
     (let ((file-existsp (probe-file path)))
       ;;if it doesn't exist, what's the point of loading it
       (when file-existsp
-	(let ((things nil)
-	      (eof (load-time-value (cons "eof" "token")))) 
-	  (with-open-file (stream path :direction :input :if-does-not-exist nil)
-	    (tagbody rep
-	       (let ((thing (safer-read stream nil eof)))
-		 (unless (eq thing eof)
-		   (push thing things)
-		   (go rep)))))
-	  (nreverse things))))))
+        (let ((things nil)
+              (eof (load-time-value (cons "eof" "token")))) 
+          (with-open-file (stream path :direction :input :if-does-not-exist nil)
+            (tagbody rep
+               (let ((thing (safer-read stream nil eof)))
+                 (unless (eq thing eof)
+                   (push thing things)
+                   (go rep)))))
+          (nreverse things))))))
 
 (defun safer-read (&optional (stream *standard-input*)
-		     (eof-error-p nil) (eof-value nil) (recursive-p nil))
+                     (eof-error-p nil) (eof-value nil) (recursive-p nil))
   (with-standard-io-syntax
     (let ((*package* (load-time-value (find-package :cl))))
       (let ((*read-eval* nil))
-	(read stream eof-error-p eof-value recursive-p)))))
+        (read stream eof-error-p eof-value recursive-p)))))
 (defun safer-print (object &optional (stream *standard-output*))
   (with-standard-io-syntax
     (let ((*package* (load-time-value (find-package :cl))))
       (let ((*read-eval* nil)
-	    (*print-circle* t)
-	    (*print-readably* t))
-	(print object stream)))))
+            (*print-circle* t)
+            (*print-readably* t))
+        (print object stream)))))
  
 ;;File format
 ;;https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node191.html
@@ -65,18 +65,18 @@
   (with-open-file (stream path :direction :input :if-does-not-exist :error)
     (let ((eof (load-time-value (cons "eof" "token"))))
       (let ((char1 (read-char stream nil eof)))
-	(cond ((eq eof char1) #|EOF|#)
-	      (t
-	       (let ((char2 (read-char stream nil eof)))
-		 (cond ((eq eof char2)  #|EOF|#)
-		       (t
-			(when (and (char= char1
-					  (elt *reading-error* 0))
-				   (char= char2
-					  (elt *reading-error* 1)))
-			  (let ((array (make-empty-header-string)))
-			   (read-sequence array stream :end *name-type-length*)
-			    (return-from determine-file-type array))))))))))
+        (cond ((eq eof char1) #|EOF|#)
+              (t
+               (let ((char2 (read-char stream nil eof)))
+                 (cond ((eq eof char2)  #|EOF|#)
+                       (t
+                        (when (and (char= char1
+                                          (elt *reading-error* 0))
+                                   (char= char2
+                                          (elt *reading-error* 1)))
+                          (let ((array (make-empty-header-string)))
+                           (read-sequence array stream :end *name-type-length*)
+                            (return-from determine-file-type array))))))))))
     nil))
 (defun insert-reading-error-bytes (stream name)
   (assert (= *name-type-length* (length name)))
@@ -122,7 +122,7 @@
 (defun store-lisp-objects-to-file-zlib-conspack (path things)
   (assert (typep things 'list))
   (with-open-file (stream path :direction :output :if-exists :supersede
-			  :element-type '(unsigned-byte 8))
+                          :element-type '(unsigned-byte 8))
     (insert-reading-error-bytes stream *zlib-conspack-header*)
     (write-sequence (encode-zlib-conspack-payload things) stream)))
 
@@ -130,10 +130,10 @@
   ;;ripped from conspack:decode-file
   (with-open-file
       (stream path :direction :input :element-type '(unsigned-byte 8)
-	      :if-does-not-exist :error)
+              :if-does-not-exist :error)
     (skip-header-bytes stream)
     (let* ((remaining-bytes (the fixnum (- (file-length stream) *header-length*)))
-	   (array (make-array remaining-bytes :element-type '(unsigned-byte 8))))
+           (array (make-array remaining-bytes :element-type '(unsigned-byte 8))))
       (read-sequence array stream)
       (decode-zlib-conspack-payload array))))
 
@@ -145,12 +145,12 @@
     ;;if it doesn't exist, what's the point of loading it
     (when file-existsp
       (let ((type (determine-file-type path)))
-	(cond
-	  ((null type)
-	   (retrieve-lisp-objects-from-file-lisp-reader path))
-	  ((string= *zlib-conspack-header* type)
-	   (retrieve-lisp-objects-from-file-zlib-conspack path))
-	  (t (error "what is this? ~s" type)))))))
+        (cond
+          ((null type)
+           (retrieve-lisp-objects-from-file-lisp-reader path))
+          ((string= *zlib-conspack-header* type)
+           (retrieve-lisp-objects-from-file-zlib-conspack path))
+          (t (error "what is this? ~s" type)))))))
 
 #+nil ;;for converting between formats, read, then write a known format
 (defun convert-to-conspack (&optional (path (world-path)))
@@ -158,4 +158,4 @@
     (dolist (file files)
       (time
        (let ((data (retrieve-lisp-objects-from-file file)))
-	 (store-lisp-objects-to-file file data))))))
+         (store-lisp-objects-to-file file data))))))

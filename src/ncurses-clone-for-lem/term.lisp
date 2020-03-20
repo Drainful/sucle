@@ -11,12 +11,12 @@
            ;;:get-mouse-mode
            ;;:enable-mouse
            ;;:disable-mouse
-	   #:attribute-bits
-	   #:attribute-bits2
-	   #:with-attribute
+           #:attribute-bits
+           #:attribute-bits2
+           #:with-attribute
 
-	   #:color-fun
-	   #:*colors*))
+           #:color-fun
+           #:*colors*))
 (in-package :lem.term)
 ;;;;<LEM COLORS.LISP> -> entire section ripped from lem/core/colors.lisp
 (defparameter *rgb.txt* "! $Xorg: rgb.txt,v 1.3 2000/08/17 19:54:00 cpqbld Exp $
@@ -837,7 +837,7 @@
     (setf *mouse-mode* 1)
     ;;[FIXME]- mouse?
     (charms/ll:mousemask (logior charms/ll:all_mouse_events
-				 charms/ll:report_mouse_position))))
+                                 charms/ll:report_mouse_position))))
 #+nil
 (defun disable-mouse ()
   (setf ncurses-clone:*mouse-enabled-p* nil)
@@ -856,9 +856,9 @@
 
 (defun gen-color-array (n)
   (let ((counter 0)
-	(array (make-array n)))
+        (array (make-array n)))
     (flet ((add-color (r g b)
-	     #+nil
+             #+nil
              (when (<= 8 counter)
                (charms/ll:init-color counter
                                      (round (* r 1000/255))
@@ -868,10 +868,10 @@
              (incf counter)))
       (setf array (make-array n))
       (dotimes (i n)
-	(apply #'add-color
-	       (mapcar (lambda (x)
-			 (floor (* x 255)))
-		       (multiple-value-list (color-fun i))))))
+        (apply #'add-color
+               (mapcar (lambda (x)
+                         (floor (* x 255)))
+                       (multiple-value-list (color-fun i))))))
     (values array)))
 
 (defun rgb-to-hsv (r g b)
@@ -905,33 +905,33 @@
        (push (mod x 6) acc)
        (setf x (floor x 6))
        (when (zerop x)
-	 (return)))
+         (return)))
     acc))
 
 
 (defparameter *ansi-color-names-vector* nil)
 (defun color-fun (color)
   (labels ((bcolor (r g b)
-	     (values (/ (utility:floatify r) 255.0)
-		     (/ (utility:floatify g) 255.0)
-		     (/ (utility:floatify b) 255.0)))
-	   (c (r g b)
-	     (bcolor r g b))
-	   (c6 (x)
-	     (destructuring-bind (r g b) (last (append (list 0 0 0)
-						       (c6? x))
-					       3)
-	       (bcolor (* 51 r)
-		       (* 51 g)
-		       (* 51 b))))
-	   (g (x)
-	     (let* ((magic (load-time-value (/ 255.0 23.0)))
-		    (val (* x magic)))
-	       (c val val val))))
+             (values (/ (utility:floatify r) 255.0)
+                     (/ (utility:floatify g) 255.0)
+                     (/ (utility:floatify b) 255.0)))
+           (c (r g b)
+             (bcolor r g b))
+           (c6 (x)
+             (destructuring-bind (r g b) (last (append (list 0 0 0)
+                                                       (c6? x))
+                                               3)
+               (bcolor (* 51 r)
+                       (* 51 g)
+                       (* 51 b))))
+           (g (x)
+             (let* ((magic (load-time-value (/ 255.0 23.0)))
+                    (val (* x magic)))
+               (c val val val))))
     
     (let ((color-data (nth color *ansi-color-names-vector*)))
       (when color-data
-	(return-from color-fun (apply #'c color-data))))
+        (return-from color-fun (apply #'c color-data))))
     ;;[FIXME]the case statement below goes through redundant numbers?
     (case color
       (0 (c 0 0 0))
@@ -951,17 +951,17 @@
       (14 (c 0 255 255))
       (15 (c 255 255 255))
       (t (if (< color (+ 16 (* 6 6 6)))
-	     (c6 (- color 16))
-	     (g (- color (+ 16 (* 6 6 6)))))))))
+             (c6 (- color 16))
+             (g (- color (+ 16 (* 6 6 6)))))))))
 
 #+nil
 (defun detect-distance ()
   (map 'list
        (lambda (x y)
-	 (mapcar '- x y))
+         (mapcar '- x y))
        (mapcar (lambda (x) (mapcar (lambda (x) (* x 255))
-				   (multiple-value-list (color-fun x))))
-	       (alexandria:iota 256))
+                                   (multiple-value-list (color-fun x))))
+               (alexandria:iota 256))
        *colors*))
 
 
@@ -1008,10 +1008,10 @@
     ;;(charms/ll:init-pair *pair-counter* (car pair-color) (cdr pair-color))
     (ncurses-clone:ncurses-init-pair *pair-counter* (car pair-color) (cdr pair-color))
     (setf (gethash pair-color *color-pair-table*)
-	  *pair-counter* ;;[FIXME] wat
-	  ;;(ncurses-clone:ncurses-color-pair *pair-counter*)
-	  ;;(charms/ll:color-pair *pair-counter*)
-	  )
+          *pair-counter* ;;[FIXME] wat
+          ;;(ncurses-clone:ncurses-color-pair *pair-counter*)
+          ;;(charms/ll:color-pair *pair-counter*)
+          )
     ;;[FIXME] return color-pair?
     *pair-counter*)
   #+nil
@@ -1021,59 +1021,59 @@
 
   (defun get-color-pair (fg-color-name bg-color-name)
     (let* ((fg-color (if (null fg-color-name) -1 (get-color fg-color-name)))
-	   (bg-color (if (null bg-color-name) -1 (get-color bg-color-name)))
-	   (pair-color (cons fg-color bg-color)))
+           (bg-color (if (null bg-color-name) -1 (get-color bg-color-name)))
+           (pair-color (cons fg-color bg-color)))
       (cond ((gethash pair-color *color-pair-table*))
-	    ((< *pair-counter* *color-pairs*)
-	     (init-pair pair-color))
-	    (t 0))))
+            ((< *pair-counter* *color-pairs*)
+             (init-pair pair-color))
+            (t 0))))
 
   #+(or)
   (defun get-color-content (n)
     (cffi:with-foreign-pointer (r (cffi:foreign-type-size '(:pointer :short)))
       (cffi:with-foreign-pointer (g (cffi:foreign-type-size '(:pointer :short)))
-	(cffi:with-foreign-pointer (b (cffi:foreign-type-size '(:pointer :short)))
-	  (charms/ll:color-content n r g b)
-	  (list (cffi:mem-ref r :short)
-		(cffi:mem-ref g :short)
-		(cffi:mem-ref b :short))))))
+        (cffi:with-foreign-pointer (b (cffi:foreign-type-size '(:pointer :short)))
+          (charms/ll:color-content n r g b)
+          (list (cffi:mem-ref r :short)
+                (cffi:mem-ref g :short)
+                (cffi:mem-ref b :short))))))
 
   (defun get-default-colors ()
     (ncurses-clone:ncurses-pair-content 0)
     #+nil
     (cffi:with-foreign-pointer (f (cffi:foreign-type-size '(:pointer :short)))
       (cffi:with-foreign-pointer (b (cffi:foreign-type-size '(:pointer :short)))
-	(charms/ll:pair-content 0 f b)
-	(values (cffi:mem-ref f :short)
-		(cffi:mem-ref b :short)))))
+        (charms/ll:pair-content 0 f b)
+        (values (cffi:mem-ref f :short)
+                (cffi:mem-ref b :short)))))
 
   (defun set-default-color (foreground background)
   ;;;;-1 for values mean defaults.
     (let ((fg-color (if foreground (get-color foreground) -1))
-	  (bg-color (if background (get-color background) -1)))
+          (bg-color (if background (get-color background) -1)))
       (ncurses-clone:ncurses-assume-default-color fg-color bg-color)
       #+nil
       (charms/ll:assume-default-colors fg-color
-				       bg-color))))
+                                       bg-color))))
 
 (defun term-set-foreground (name)
   (multiple-value-bind (fg found) (get-color name)
     (cond (found
-	   ;;charms/ll:assume-default-colors
-	   (setf  ncurses-clone:*fg-default* fg)
-	   t)
-	  (t
-	   (error "Undefined color: ~A" name)))))
+           ;;charms/ll:assume-default-colors
+           (setf  ncurses-clone:*fg-default* fg)
+           t)
+          (t
+           (error "Undefined color: ~A" name)))))
 
 (defun term-set-background (name)
   (multiple-value-bind (bg found) (get-color name)
     (cond (found
-	   ;;charms/ll:assume-default-colors
-	   (setf
-	    ncurses-clone:*bg-default* bg)
-	   t)
-	  (t
-	   (error "Undefined color: ~A" name)))))
+           ;;charms/ll:assume-default-colors
+           (setf
+            ncurses-clone:*bg-default* bg)
+           t)
+          (t
+           (error "Undefined color: ~A" name)))))
 
 (defun background-mode ()
   ;;[FIXME]
@@ -1083,7 +1083,7 @@
   ;;[FIXME]
   (let ((b (nth-value 1 (get-default-colors))))
     (cond ((= b -1) :light
-	   )
+           )
           (t
            (let ((color (aref *colors* b)))
              (lem:rgb-to-background-mode (color-red color)
@@ -1143,7 +1143,7 @@
   ;; enable default color code (-1)
   ;;#+win32(charms/ll:use-default-colors)
   (init-colors 256
-	       )
+               )
   ;;;[FIXME] find out what all these options do
   ;;(set-default-color nil nil)
   ;;(charms/ll:noecho)
@@ -1216,10 +1216,10 @@ The echo and noecho routines control whether characters typed by the user are ec
        (logior fg (load-time-value (ash 1 8)))
        ncurses-clone:*fg-default*)
    (ash (if bg
-	    ;;[FIXME]Why the logior?
-	    (logior bg (load-time-value (ash 1 8)))
-	    ncurses-clone:*bg-default*)
-	9)
+            ;;[FIXME]Why the logior?
+            (logior bg (load-time-value (ash 1 8)))
+            ncurses-clone:*bg-default*)
+        9)
    ;;(lem.term:get-color-pair foreground background)
    (if boldp
        ;;charms/ll:a_bold

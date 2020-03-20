@@ -2,10 +2,10 @@
   (:use #:cl)
   (:use #:sb-cga)
   (:import-from #:sb-cga
-		#:matrix
-		#:sfunction
+                #:matrix
+                #:sfunction
 
-		#:submatrix-determinant)
+                #:submatrix-determinant)
   (:export
    #:%matrix
    #:%identity-matrix

@@ -19,8 +19,8 @@
    (lambda (window)
      (let ((view (lem:window-view window)))
        (when view ;;FIXME::what can this be?
-	 (setf (ncurses-clone-lem-view:ncurses-view-parent-window view)
-	       window))))))
+         (setf (ncurses-clone-lem-view:ncurses-view-parent-window view)
+               window))))))
 
 ;;;;
 (defclass sucle-attribute (lem:attribute)
@@ -34,26 +34,26 @@
 (defparameter *editor-thread* nil)
 (defun invoke (function)
   (when (or (null *editor-thread*)
-	    (not (bt:thread-alive-p *editor-thread*)))
+            (not (bt:thread-alive-p *editor-thread*)))
     (print "starting editor thread")
     (let (;;(result nil)
-	  (input-thread (bt:current-thread)))
+          (input-thread (bt:current-thread)))
       (setf ncurses-clone::*char-width-at-fun* #'lem-base:char-width)
       (setf *editor-thread*
-	    (funcall function
-		     nil
-		     (lambda (report)
-		       (bt:interrupt-thread
-			input-thread
-			(lambda ()
-			  (print report)
-			  (error 'exit-editor :value report))))))
+            (funcall function
+                     nil
+                     (lambda (report)
+                       (bt:interrupt-thread
+                        input-thread
+                        (lambda ()
+                          (print report)
+                          (error 'exit-editor :value report))))))
       #+nil
       (setf result (input-loop editor-thread))
       #+nil
       (when (and (typep result 'exit-editor)
-		 (exit-editor-value result))
-	(format t "~&~A~%" (exit-editor-value result))))))
+                 (exit-editor-value result))
+        (format t "~&~A~%" (exit-editor-value result))))))
 (defmethod lem-if:invoke ((implementation sucle) function)
   ;;FIXME::Factor out term-init?
   (invoke function))
@@ -82,25 +82,25 @@
 (defun attribute-to-bits (attribute-or-name)
   (let ((attribute (lem:ensure-attribute attribute-or-name nil))
         ;;(cursorp (eq attribute-or-name 'lem:cursor))
-	)
+        )
     (if (null attribute)
         0
         (or (lem::attribute-%internal-value attribute)
             (let ((bits
-		   (lem.term::get-attribute-bits-2
-		    (lem:attribute-foreground attribute)
-		    (lem:attribute-background attribute)
-		    (lem::attribute-bold-p attribute)
-		    (lem::attribute-underline-p attribute)
-		    (lem::attribute-reverse-p attribute))))
+                   (lem.term::get-attribute-bits-2
+                    (lem:attribute-foreground attribute)
+                    (lem:attribute-background attribute)
+                    (lem::attribute-bold-p attribute)
+                    (lem::attribute-underline-p attribute)
+                    (lem::attribute-reverse-p attribute))))
               (setf (lem::attribute-%internal-value attribute) bits)
               bits)))))
 
 (defmacro with-attribute-and-view ((attribute view) &body body)
   (alexandria:once-only (attribute)
     `(ncurses-clone::with-attributes
-	 ((attribute-to-bits ,attribute) (list ,attribute ,view)
-	  (typep ,attribute 'sucle-attribute))
+         ((attribute-to-bits ,attribute) (list ,attribute ,view)
+          (typep ,attribute 'sucle-attribute))
        ,@body)))
 (defmethod lem-if:print ((implementation sucle) view x y string attribute)
   ;;FIXME::different names

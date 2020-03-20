@@ -1,19 +1,19 @@
 (defpackage #:sucle
   (:use #:cl)
   (:import-from #:utility
-		#:dobox
-		#:with-vec
-		#:floatify
-		#:etouq
-		#:once-only
-		#:dohash
-		#:%list
-		#:toggle)
+                #:dobox
+                #:with-vec
+                #:floatify
+                #:etouq
+                #:once-only
+                #:dohash
+                #:%list
+                #:toggle)
   (:export #:start))
 (defpackage #:world
   (:use :cl)
   (:import-from #:utility
-		#:dobox)
+                #:dobox)
   (:export
    ;;;block accessors
    #:getblock #:setblock
@@ -43,12 +43,12 @@
    #:unsquared-chunk-distance
    #:blocky-chunk-distance 
    #:*chunk-radius*
-  ))
+   ))
 (defpackage #:block-data
   (:use #:cl)
   (:import-from #:utility
-		#:keywordify
-		#:with-gensyms)
+                #:keywordify
+                #:with-gensyms)
   (:export
    #:data
    #:lookup))

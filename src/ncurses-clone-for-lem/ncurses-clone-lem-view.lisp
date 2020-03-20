@@ -58,13 +58,13 @@
   (flet ((newwin (nlines ncols begin-y begin-x main-screen)
            (declare (ignore main-screen))
            (let ((win
-		  (;;charms/ll:newwin
-		   ncurses-clone:ncurses-newwin
-		   nlines ncols begin-y begin-x)))
-	     #+nil;;What is this for? keypad?
-	     (when use-modeline (;;charms/ll:keypad
-				 ncurses-clone:ncurses-keypad
-				 win 1))
+                  (;;charms/ll:newwin
+                   ncurses-clone:ncurses-newwin
+                   nlines ncols begin-y begin-x)))
+             #+nil;;What is this for? keypad?
+             (when use-modeline (;;charms/ll:keypad
+                                 ncurses-clone:ncurses-keypad
+                                 win 1))
              ;; (when main-screen
              ;;   (charms/ll:idlok win 1)
              ;;   (charms/ll:scrollok win 1))
@@ -81,7 +81,7 @@
   (utility:with-gensyms (lock)
     `(let ((,lock (ncurses-view-lock ,view)))
        (bt:with-recursive-lock-held (,lock)
-	 ,@body))))
+         ,@body))))
 (defun delete-view (view)
   (with-view-lock view
     (;;charms/ll:delwin
@@ -102,9 +102,9 @@
        ncurses-clone:ncurses-clearok
        (ncurses-view-scrwin view) 1)
       (when (ncurses-view-modeline-scrwin view)
-	(;;charms/ll:clearok
-	 ncurses-clone:ncurses-clearok
-	 (ncurses-view-modeline-scrwin view) 1)))))
+        (;;charms/ll:clearok
+         ncurses-clone:ncurses-clearok
+         (ncurses-view-modeline-scrwin view) 1)))))
 
 (defun set-view-size (view width height &optional (minibuffer-window-height 1))
   (with-view-lock view
@@ -163,29 +163,29 @@
     ;;[FIXME]why does this do nothing?
   #+nil
   (flet ((render-window (window)
-	   (let ((view (lem:window-view window)))
-	     (with-view-lock view
-	       (let ((scrwin (ncurses-view-scrwin view)))
-		 (if (lem:covered-with-floating-window-p
-		      window
-		      lem:*cursor-x* lem:*cursor-y*)
-		     (;;charms/ll:curs-set
-		      ncurses-clone:ncurses-curs-set
-		      0)
-		     (progn
-		       (;;charms/ll:curs-set
-			ncurses-clone:ncurses-curs-set
-			1)
-		       (;;charms/ll:wmove
-			ncurses-clone:ncurses-wmove
-			scrwin lem:*cursor-y* lem:*cursor-x*)))
-		 ;;[FIXME]
-		 (;;charms/ll:wnoutrefresh
-		  ncurses-clone:ncurses-wnoutrefresh
-		  scrwin)
-		 ;;;[FIXME]does not mirror the lem/ncurses code
-		 (ncurses-clone:ncurses-curs-set 0)
-		 )))))
+           (let ((view (lem:window-view window)))
+             (with-view-lock view
+               (let ((scrwin (ncurses-view-scrwin view)))
+                 (if (lem:covered-with-floating-window-p
+                      window
+                      lem:*cursor-x* lem:*cursor-y*)
+                     (;;charms/ll:curs-set
+                      ncurses-clone:ncurses-curs-set
+                      0)
+                     (progn
+                       (;;charms/ll:curs-set
+                        ncurses-clone:ncurses-curs-set
+                        1)
+                       (;;charms/ll:wmove
+                        ncurses-clone:ncurses-wmove
+                        scrwin lem:*cursor-y* lem:*cursor-x*)))
+                 ;;[FIXME]
+                 (;;charms/ll:wnoutrefresh
+                  ncurses-clone:ncurses-wnoutrefresh
+                  scrwin)
+                 ;;;[FIXME]does not mirror the lem/ncurses code
+                 (ncurses-clone:ncurses-curs-set 0)
+                 )))))
     #+nil
     (ncurses-clone:ncurses-wnoutrefresh
      ncurses-clone:*std-scr*)
@@ -207,10 +207,10 @@
     #+nil
     (when (typep attribute 'sucle-attribute)
       (let ((overlay (sucle-attribute-overlay attribute)))
-	(print (list
-		(lem:points-to-string
-		 (lem:overlay-start overlay)
-		 (lem:overlay-end overlay))))))
+        (print (list
+                (lem:points-to-string
+                 (lem:overlay-start overlay)
+                 (lem:overlay-end overlay))))))
     
     ;;(charms/ll:scrollok (ncurses-view-scrwin view) 0)
     (;;charms/ll:mvwaddstr
@@ -249,14 +249,14 @@
     ;;(print view)
     ;;(print ncurses-clone:*std-scr*)
     (when (and (ncurses-view-modeline-scrwin view)
-	       (< 0 (ncurses-view-x view)))
+               (< 0 (ncurses-view-x view)))
       (;;charms/ll:move
        ncurses-clone:ncurses-move
        (ncurses-view-y view)
        (1- (ncurses-view-x view)))
       (;;charms/ll:vline
        ncurses-clone:ncurses-vline
-       #\space		    
+       #\space              
        (1+ (ncurses-view-height view))))
     ;;(print view)
     ;;(print ncurses-clone:*std-scr*)

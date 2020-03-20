@@ -7,20 +7,20 @@
 ;;This is what "p" and "r" are for?
 (defun configure-lem ()
   (lem:add-hook lem:*find-file-hook*
-		(lambda (buffer)
-		  (when (eq (lem:buffer-major-mode buffer) 'lem-lisp-mode:lisp-mode)
-		    (lem:change-buffer-mode buffer 'lem-paredit-mode:paredit-mode t))))
+                (lambda (buffer)
+                  (when (eq (lem:buffer-major-mode buffer) 'lem-lisp-mode:lisp-mode)
+                    (lem:change-buffer-mode buffer 'lem-paredit-mode:paredit-mode t))))
   (setf lem.term::*ansi-color-names-vector*
-	;;from misterioso
-	(mapcar 'lem:parse-color
-		(remove-duplicates '("#2d3743" "#ff4242" "#74af68" "#dbdb95"
-				     "#34cae2" "#008b8b" "#00ede1" "#e1e1e0"
-				     ;;above were from ansi-color-names-vector
-				     ;;https://github.com/jwiegley/emacs-release/blob/master/etc/themes/misterioso-theme.el
-				     "#878787" "#eeeeec" "#415160" "#2d4948"
-				     "#212931" "#729fcf" "#23d7d7" "#ffad29"
-				     "#e67128")
-				   :test 'string=)))
+        ;;from misterioso
+        (mapcar 'lem:parse-color
+                (remove-duplicates '("#2d3743" "#ff4242" "#74af68" "#dbdb95"
+                                     "#34cae2" "#008b8b" "#00ede1" "#e1e1e0"
+                                     ;;above were from ansi-color-names-vector
+                                     ;;https://github.com/jwiegley/emacs-release/blob/master/etc/themes/misterioso-theme.el
+                                     "#878787" "#eeeeec" "#415160" "#2d4948"
+                                     "#212931" "#729fcf" "#23d7d7" "#ffad29"
+                                     "#e67128")
+                                   :test 'string=)))
   (lem.term::regen-color-array)
   (progn
     (define-sacred-keys)
@@ -49,7 +49,7 @@
   (lem:send-event
    (lambda ()
      (lem:find-file (merge-pathnames "other/example.lisp"
-				     (asdf:system-source-directory :lem-opengl)))
+                                     (asdf:system-source-directory :lem-opengl)))
      (lem-paredit-mode:paredit-mode)
      (lem:load-theme "misterioso")))
   (sucle::enter 'lem-opengl-app))
@@ -60,12 +60,12 @@
   ;;(display-background-mode :dark)
   (foreground "#e1e1e0") ;;
   (background ;;"#3a3a3a" ;;
-	      "#2d3743"
-	      )
+              "#2d3743"
+              )
   (cursor :background "#415160"
-	  ;;FIXME::what is the correct foreground? ;;not perfect, not same as modeline background,
-	  ;;but good enough?
-	  :foreground "#212931") ;;
+          ;;FIXME::what is the correct foreground? ;;not perfect, not same as modeline background,
+          ;;but good enough?
+          :foreground "#212931") ;;
   (region :background "#2d4948" :foreground "#e1e1e0") ;;
   (modeline :background "#212931" :foreground "#eeeeec") ;;
   (modeline-inactive :background "#878787" :foreground "#eeeeec");;
@@ -107,18 +107,18 @@
 (lem:define-command delete-region-or-char () ()
   (let ((buffer (lem:current-buffer)))
     (if (lem:buffer-mark-p buffer)
-	(%delete-region buffer)
-	(;;lem:delete-character ;;FIXME::dispatch on mode?
-	 lem-paredit-mode:paredit-backward-delete))))
+        (%delete-region buffer)
+        (;;lem:delete-character ;;FIXME::dispatch on mode?
+         lem-paredit-mode:paredit-backward-delete))))
 
 (lem:define-command indent-region-or-otherwise () ()
   (let ((buffer (lem:current-buffer)))
     (if (lem:buffer-mark-p buffer)
-	(progn
-	  (print 3434)
-	  (lem:indent-region (lem:buffer-mark buffer)
-			     (lem:buffer-point buffer)))
-	(lem.language-mode::indent-line-and-complete-symbol))))
+        (progn
+          (print 3434)
+          (lem:indent-region (lem:buffer-mark buffer)
+                             (lem:buffer-point buffer)))
+        (lem.language-mode::indent-line-and-complete-symbol))))
 
 (lem:define-command delete-region () ()
   (let ((buffer (lem:current-buffer)))
@@ -136,24 +136,24 @@
   (defparameter *packages* nil)
   (defun find-lem-package ()
     (remove-if-not (lambda (x)
-		     (prefix-p "LEM" 
-			       (package-name x)))
-		   (list-all-packages)))
+                     (prefix-p "LEM" 
+                               (package-name x)))
+                   (list-all-packages)))
 ;;;FIXME::see cepl.examples/cleanup for similar code
   #+nil
   (setf *packages* (find-lem-package))
   (defun find-variables (&optional (packages *packages*))
     (let ((acc nil))
       (dolist (package packages)
-	(do-symbols (sym package)
-	  (when (boundp sym)
-	    (when (eq (symbol-package sym)
-		      package)
-	      (push sym acc)))))
+        (do-symbols (sym package)
+          (when (boundp sym)
+            (when (eq (symbol-package sym)
+                      package)
+              (push sym acc)))))
       acc))
   (defun prefix-p (prefix string)
     "test whether prefix is a prefix of string"
     (let ((len (length prefix)))
       (search prefix string
-	      :start1 0 :end1 len
-	      :start2 0 :end2 (min len (length string))))))
+              :start1 0 :end1 len
+              :start2 0 :end2 (min len (length string))))))

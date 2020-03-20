@@ -27,7 +27,7 @@
 
 (defun our-make-overlay (start end attribute)
   (let* ((overlay (lem:make-overlay start end attribute))
-	 (buffer (lem:overlay-buffer overlay)))
+         (buffer (lem:overlay-buffer overlay)))
     (unless (gethash buffer *overlays*)
       (lem:add-hook
        (lem:variable-value 'lem:kill-buffer-hook :buffer
@@ -38,7 +38,7 @@
                            buffer)
        'foo))
     (setf (lem-sucle::sucle-attribute-overlay attribute)
-	  overlay)
+          overlay)
     (push overlay (gethash buffer *overlays*))
     overlay))
 

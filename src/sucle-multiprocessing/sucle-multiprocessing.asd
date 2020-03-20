@@ -3,13 +3,13 @@
   :license "MIT"
   :description "multiprocessing fcailities"
   :depends-on (
-	       ;;for multiprocessing
-	       #:lparallel
-	       #:bordeaux-threads
-	       #:cl-cpus
-	       #:uncommon-lisp
-	       #:utility
-	       )
+               ;;for multiprocessing
+               #:lparallel
+               #:bordeaux-threads
+               #:cl-cpus
+               #:uncommon-lisp
+               #:utility
+               )
   :serial t
   :components 
   (
